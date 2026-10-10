@@ -1799,6 +1799,68 @@ def _fragmented_left_prose(members: list[tuple[_LineItem, BBox]], lane: _TextLan
     return False
 
 
+def restore_leading_inline_fractions(lines: list[_LineItem], rules: list, page_size: tuple[float, float]) -> list[_LineItem]:
+    """正文行首的短分子、分母与原生横线共同确认分式，恢复关系并保留字符成员。"""
+    remaining = list(lines)
+    for numerator in list(lines):
+        if (
+            numerator not in remaining
+            or numerator.angle != 0
+            or numerator.semantic_type is not None
+            or not re.fullmatch(r"[\dα-ωΑ-Ω+−-]{1,8}", numerator.text.strip())
+            or not re.search(r"[α-ωΑ-Ω]", numerator.text)
+        ):
+            continue
+        em = _line_effective_height(numerator, numerator.bbox)
+        for denominator in list(remaining):
+            if (
+                denominator is numerator
+                or denominator.angle != 0
+                or denominator.semantic_type is not None
+                or len(re.findall(r"[\u4e00-\u9fff]", denominator.text)) < 4
+                or not re.match(r"^\s*[α-ωΑ-Ω]", denominator.text)
+                or not denominator.chars
+            ):
+                continue
+            first = next((char for char in denominator.chars if str(char.get("char", "")).strip()), None)
+            ink = _coerce_bbox(first.get("tight_bbox") or first.get("bbox")) if first else None
+            if ink is None:
+                continue
+            separators = [
+                rule.bbox
+                for rule in rules
+                if rule.orientation == "horizontal"
+                and 0.5 * (numerator.bbox[2] - numerator.bbox[0]) <= rule.bbox[2] - rule.bbox[0] <= 1.5 * em
+                and rule.bbox[0] <= _bbox_center_x(ink) <= rule.bbox[2]
+                and numerator.bbox[1] < rule.bbox[1] < ink[3]
+                and _bbox_axis_overlap_ratio(rule.bbox, numerator.bbox, axis="x") >= 0.7
+                and 0 < ink[3] - numerator.bbox[1] <= 2.5 * em
+            ]
+            if not separators:
+                continue
+            preceding = [
+                line
+                for line in remaining
+                if line is not numerator
+                and line is not denominator
+                and len(line.text) >= 20
+                and line.bbox[3] <= numerator.bbox[1] + 0.2 * em
+                and numerator.bbox[1] - line.bbox[3] <= em
+                and abs(line.bbox[0] - denominator.bbox[0]) <= em
+            ]
+            if not preceding:
+                continue
+            merged = _merge_paragraph_formula_members(
+                [(numerator, numerator.bbox), (denominator, denominator.bbox)], page_size, em
+            )
+            merged.text = numerator.text.strip() + "/" + denominator.text.lstrip()
+            merged.semantic_type = "text"
+            merged.title_suppressed = True
+            remaining = [line for line in remaining if line is not numerator and line is not denominator] + [merged]
+            break
+    return sorted(remaining, key=lambda line: (line.bbox[1], line.bbox[0], line.source_index))
+
+
 def _merge_paragraph_formula_members(
     members: list[tuple[_LineItem, BBox]], page_size: tuple[float, float], median_height: float
 ) -> _LineItem:

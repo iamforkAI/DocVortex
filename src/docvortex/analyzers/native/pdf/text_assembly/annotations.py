@@ -21,7 +21,7 @@ def _split_labeled_visual_note_blocks(blocks, image_bboxes):
         if (
             block.get("type") != "text"
             or len(lines) < 2
-            or not re.match(r"^\s*(?:notes?|注|备注)\s*[:：]", lines[0].text, re.I)
+            or not re.match(r"^\s*(?:notes?|注|备注|sources?|资料来源|数据来源|来源)\s*[:：]", lines[0].text, re.I)
         ):
             output.append(block)
             continue
@@ -41,6 +41,19 @@ def _split_labeled_visual_note_blocks(blocks, image_bboxes):
             ),
             len(lines),
         ]
+        # 小字号来源/附注接到大字号正文时，按实际排版重置截断，而不是整块交给图注分类。
+        note_height = _line_effective_height(lines[0], lines[0].bbox)
+        body_start = next(
+            (
+                index
+                for index, line in enumerate(lines[1:], 1)
+                if _line_effective_height(line, line.bbox) >= 1.2 * note_height
+                and not re.match(r"^\s*(?:notes?|注|备注|sources?|资料来源|数据来源|来源)\s*[:：]", line.text, re.I)
+            ),
+            None,
+        )
+        if body_start is not None:
+            cuts = sorted(set([*cuts, body_start]))
         if len(cuts) == 2:
             output.append(block)
             continue
@@ -449,7 +462,9 @@ def _merge_multiline_title_blocks(
                 and previous_lines[-1].title_band_id == current_lines[0].title_band_id
             )
             if (
-                -0.2 * max(previous_height, current_height) <= vertical_gap <= 0.4 * max(previous_height, current_height)
+                -0.2 * max(previous_height, current_height)
+                <= vertical_gap
+                <= (1.0 if shared_structural_band else 0.4) * max(previous_height, current_height)
                 and _bbox_axis_overlap_ratio(
                     previous_bbox,
                     current_bbox,

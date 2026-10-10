@@ -100,12 +100,13 @@ def _should_connect_semantic_rows(
     previous_height = _line_effective_height(previous_line, previous_bbox)
     current_height = _line_effective_height(current_line, current_bbox)
     pair_height = max(previous_height, current_height)
-    if max(previous_height, current_height) / min(previous_height, current_height) > 1.35:
+    shared_title_band = previous_line.title_band_id is not None and previous_line.title_band_id == current_line.title_band_id
+    confirmed_title_band = shared_title_band and previous_line.structural_title and current_line.structural_title
+    if max(previous_height, current_height) / min(previous_height, current_height) > 1.35 and not confirmed_title_band:
         return False
     vertical_gap = _effective_text_row_gap(previous, current)
     if not -0.25 * pair_height <= vertical_gap <= max(1.25 * pair_height, regular_gap + 0.75 * pair_height):
         return False
-    shared_title_band = previous_line.title_band_id is not None and previous_line.title_band_id == current_line.title_band_id
     if previous_line.semantic_type == "paragraph_title" and vertical_gap > 0.5 * pair_height and not shared_title_band:
         return False
     font_conflicts = (
@@ -1172,6 +1173,21 @@ def _should_connect_text_rows(
         abs(current_bbox[0] - lane.left) <= 0.75 * pair_height
         and -0.5 * pair_height <= previous_bbox[0] - lane.left <= 2.0 * pair_height
     )
+    before_cjk, after_cjk = previous_line.native_cjk_style, current_line.native_cjk_style
+    mixed_cjk_continuation = (
+        before_cjk is not None
+        and after_cjk is not None
+        and before_cjk[:3] == after_cjk[:3]
+        and before_cjk[3] > 0
+        and 0.9 <= after_cjk[3] / before_cjk[3] <= 1.1
+        and 1.25 <= max(previous_height, current_height) / min(previous_height, current_height) <= 1.45
+        and previous_width >= 0.8 * lane_width
+        and current_width >= 0.5 * lane_width
+        and current_returns_to_lane_left
+        and not previous_line.paragraph_terminal
+        and not _font_weights_conflict(previous_line, current_line)
+        and -0.25 * pair_height <= vertical_gap <= regular_gap + 0.35 * pair_height
+    )
     reliable_font_match = (
         previous_line.font_signature is None
         or current_line.font_signature is None
@@ -1282,6 +1298,7 @@ def _should_connect_text_rows(
         font_style_changed
         and _font_weights_conflict(previous_line, current_line)
         and not fallback_font_continuation
+        and not mixed_cjk_continuation
         and not emphasized_enumeration_tail
     ):
         # 显式样式位与显著字重同时变化仍是硬边界，不能被满栏几何放宽。
@@ -1299,7 +1316,8 @@ def _should_connect_text_rows(
         and not fallback_font_continuation
     ):
         # 图注到正文等排版层级转换即使同栏满行，也不能被常规续行规则重新吸收。
-        return False
+        if not mixed_cjk_continuation:
+            return False
     full_width_continuation = (
         both_fill_lane
         and aligned_left_edges
@@ -1308,7 +1326,7 @@ def _should_connect_text_rows(
     )
     if height_ratio > 1.35 and not safe_short_tail and not full_width_continuation:
         # 满栏混合字体可跨字号续接，但显式正体/斜体等样式边界仍保持原分段语义。
-        if not both_fill_lane or not aligned_left_edges or font_style_changed:
+        if (not both_fill_lane or not aligned_left_edges or font_style_changed) and not mixed_cjk_continuation:
             return False
 
     if vertical_gap < -0.25 * pair_height:
@@ -1323,6 +1341,9 @@ def _should_connect_text_rows(
         return False
     if _horizontal_rule_separates_rows(previous_bbox, current_bbox, lane, axis_lines):
         return False
+    if mixed_cjk_continuation:
+        # 同汉字字形尺度证明日期/英文缩写首行的 dominant font 变化不构成段界，首行缩进仍保留。
+        return True
 
     gap_limit = max(
         regular_gap + max(0.5 * pair_height, 3.0 * gap_mad),

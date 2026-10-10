@@ -799,7 +799,10 @@ def _prepare_page_source(
     strong_graphic_bboxes = [
         box
         for box in strong_graphic_bboxes
-        if not any(_bbox_overlap_in_smaller(box, candidate.bbox) >= 0.5 for candidate in numeric_table_evidence)
+        if not any(
+            _bbox_overlap_in_smaller(box, candidate.bbox) >= 0.5 and _bbox_area(box) >= 0.25 * _bbox_area(candidate.bbox)
+            for candidate in numeric_table_evidence
+        )
     ]
     rule_code_blocks, claimed_rule_code_line_indices = _build_rule_delimited_code_blocks(
         analysis_source,
@@ -990,6 +993,9 @@ def _prepare_page_source(
             projected = _image_members_to_content(members, source.page_size, spatial=True)
             owner["content"] = "\n".join(filter(None, [original_image_content[id(owner)], projected]))
     remaining_lines = [line for line in remaining_lines if line.source_index not in reclaimed]
+    from .formulas import restore_leading_inline_fractions
+
+    remaining_lines = restore_leading_inline_fractions(remaining_lines, source.drawing_lines, source.page_size)
     canonical_formula_source_lines = (
         [
             replace(
@@ -1027,6 +1033,9 @@ def _prepare_page_source(
         page_index=page_index,
         reference_lines=source.lines,
     )
+    from .native_cjk_bands import restore_native_cjk_bands
+
+    restore_native_cjk_bands(remaining_lines, source.page_size, early_visual_bboxes + table_bboxes, page_index)
     _classify_image_footnotes(remaining_lines, early_visual_bboxes, table_bboxes, source.drawing_lines, source.page_size)
     from .title_analysis.native_boundaries import protect_parallel_table_end_fields
 
@@ -1101,6 +1110,15 @@ def _compact_prepared_lines(
     """缓存后续仍需的字符尺度并释放字符字典，限制跨页阶段内存占用。"""
 
     for line in lines:
+        cjk = [char for char in line.chars or [] if re.fullmatch(r"[\u4e00-\u9fff]", char.get("char", ""))]
+        if cjk:
+            font = cjk[0].get("font") or {}
+            line.native_cjk_style = (
+                str(font.get("name", "")),
+                int(font.get("flags") or 0),
+                float(font.get("weight") or 0),
+                statistics.median(char["bbox"][3] - char["bbox"][1] for char in cjk),
+            )
         if line.median_glyph_width is None:
             line.median_glyph_width = _median_native_glyph_width(line, page_size)
         # 释放字符前冻结脚注首标的几何证据，供后续分项使用。

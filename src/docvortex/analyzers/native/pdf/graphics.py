@@ -707,6 +707,7 @@ def _build_graphic_like_blocks(
         for line in lines
     ]
     median_height = statistics.median(effective_heights)
+    median_height = _native_graphic_em(source, median_height)
     # 已有复杂填充容器可容许外框角落擦过长正文行，但不认领该正文或近旁标签。
     isolated.extend(
         box
@@ -1300,8 +1301,11 @@ def _detect_strong_graphic_bboxes(source: _PageSource) -> list[BBox]:
         return []
     effective_heights = [_line_effective_height(line, line.bbox) for line in source.lines if line.angle == 0]
     median_height = statistics.median(effective_heights) if effective_heights else 1.0
+    median_height = _native_graphic_em(source, median_height)
     candidates = [
         *isolated_vector_components(source),
+        *_detect_native_diagram_components(source, median_height),
+        *_detect_stacked_column_graphics(source, median_height),
         *_detect_native_raster_axis_graphics(source),
         *_detect_native_bar_graphics(source, median_height),
         *_detect_captioned_concentric_path_graphics(source, median_height),
@@ -1335,6 +1339,193 @@ def _detect_strong_graphic_bboxes(source: _PageSource) -> list[BBox]:
             bbox = _bbox_union_many([bbox, *overlapping])
         output.append(bbox)
     return sorted(output, key=lambda bbox: (bbox[1], bbox[0], bbox[3], bbox[2]))
+
+
+def _native_graphic_em(source: _PageSource, fallback: float) -> float:
+    """汉字字宽和真实墨迹共同否决异常高的宽松字体框，仅校准图形距离尺度。"""
+    chars = [char for char in source.chars if re.fullmatch(r"[\u4e00-\u9fff]", char.get("char", "")) and char.get("tight_bbox")]
+    if len(chars) < 20:
+        return fallback
+    width = statistics.median(char["bbox"][2] - char["bbox"][0] for char in chars)
+    ink = statistics.median(char["tight_bbox"][3] - char["tight_bbox"][1] for char in chars)
+    return width if width > 0 and fallback >= 2.2 * width and 0.5 * width <= ink <= 1.4 * width else fallback
+
+
+def _detect_native_diagram_components(source: _PageSource, em: float) -> list[BBox]:
+    """连接正文区真实路径和相接栅格，复杂图体整体输出；规则表格和长正文行形成屏障。"""
+    from .table_filled_grid import _detect_tiled_fill_table_candidates, _detect_filled_grid_table_candidates
+    from .isolated_graphics import _isolated_path_groups
+    from .table_detection import _detect_table_candidates, has_native_closed_grid
+    from .table_filled_grid import has_inflated_native_cjk_metrics
+
+    if not has_inflated_native_cjk_metrics(source.chars):
+        return []
+
+    table_bounds = [
+        candidate.bbox
+        for candidate in [
+            *_detect_tiled_fill_table_candidates(source, []),
+            *_detect_filled_grid_table_candidates(source.path_infos, source.page_size, []),
+        ]
+    ]
+    table_bounds.extend(
+        candidate.core_bbox or candidate.bbox
+        for candidate in _detect_table_candidates(source)
+        if has_native_closed_grid(source, candidate, allow_two_by_two=True)
+    )
+    area = source.page_size[0] * source.page_size[1]
+    paths = [
+        path
+        for path in source.path_infos
+        if path.form_depth == 0
+        and (path.fill_visible or path.stroke_visible)
+        and path.bbox[1] >= 0.08 * source.page_size[1]
+        and path.bbox[3] <= 0.93 * source.page_size[1]
+        and _bbox_area(path.bbox) < 0.5 * area
+        and not any(_bbox_overlap_in_first(path.bbox, box) >= 0.9 for box in table_bounds)
+        and not (path.segment_count == 13 and max(path.bbox[2] - path.bbox[0], path.bbox[3] - path.bbox[1]) <= 1.1 * em)
+    ]
+    result = []
+    for group in _isolated_path_groups(source, paths, 2 * em):
+        box = _bbox_union_many([path.bbox for path in group])
+        if (
+            len(group) < 3
+            or sum(path.segment_count for path in group) < 100
+            or min(box[2] - box[0], box[3] - box[1]) < 2 * em
+            or not 0.001 <= _bbox_area(box) / area <= 0.55
+        ):
+            continue
+        prose = [
+            line
+            for line in source.lines
+            if len(line.text) >= 25
+            and line.bbox[2] - line.bbox[0] > 0.6 * (box[2] - box[0])
+            and _bbox_overlap_in_first(line.bbox, box) > 0.2
+        ]
+        if len(prose) >= 2:
+            continue
+        # 路径组与图中阴影/中心照片相接时补足整幅，版心装饰底图不参与扩张。
+        for _ in range(2):
+            photos = [
+                image
+                for image in source.image_bboxes
+                if _bbox_area(image) < 0.15 * area
+                and image[1] >= 0.08 * source.page_size[1]
+                and image[3] <= 0.93 * source.page_size[1]
+                and _bbox_distance(image, box) <= 3 * em
+            ]
+            nearby = [path.bbox for path in paths if _bbox_distance(path.bbox, box) <= 1.5 * em]
+            expanded = _bbox_union_many([box, *photos, *nearby])
+            if (
+                sum(
+                    len(line.text) >= 25
+                    and line.bbox[2] - line.bbox[0] > 0.6 * (expanded[2] - expanded[0])
+                    and _bbox_overlap_in_first(line.bbox, expanded) > 0.2
+                    for line in source.lines
+                )
+                >= 2
+            ):
+                break
+            box = expanded
+        overlaps = [prior for prior in result if _bbox_overlap_in_smaller(box, prior) >= 0.2]
+        result = [prior for prior in result if prior not in overlaps]
+        result.append(_bbox_union_many([box, *overlaps]))
+    # 多个独立图标与同一条彩色箭头轨道共同证明水平时间轴，下方窄列说明属于图体。
+    icon_rows = [box for box in result if 2 * em <= box[2] - box[0] <= 5 * em and 2 * em <= box[3] - box[1] <= 5 * em]
+    for anchor in icon_rows:
+        peers = [box for box in icon_rows if abs(_bbox_center_y(box) - _bbox_center_y(anchor)) <= em]
+        if len(peers) < 4:
+            continue
+        row = _bbox_union_many(peers)
+        strips = [
+            path.bbox
+            for path in paths
+            if path.fill_visible
+            and path.rectangle_bboxes
+            and path.fill_rgba
+            and min(path.fill_rgba[:3]) < 230
+            and 0 <= path.bbox[1] - row[3] <= 4 * em
+            and 0.5 * em <= path.bbox[3] - path.bbox[1] <= 2 * em
+            and path.bbox[2] - path.bbox[0] >= 2 * em
+        ]
+        if not strips or _bbox_union_many(strips)[2] - _bbox_union_many(strips)[0] < 0.8 * (row[2] - row[0]):
+            continue
+        bounds = _bbox_union_many([row, *strips])
+        labels = [
+            line.bbox
+            for line in source.lines
+            if len(line.text) <= 25
+            and line.bbox[2] - line.bbox[0] < 0.2 * (bounds[2] - bounds[0])
+            and bounds[0] <= _bbox_center_x(line.bbox) <= bounds[2]
+            and row[1] <= line.bbox[1] <= bounds[3] + 20 * em
+        ]
+        result = [box for box in result if box not in peers]
+        result.append(_bbox_union_many([bounds, *labels]))
+        break
+    return result
+
+
+def _detect_stacked_column_graphics(source: _PageSource, em: float) -> list[BBox]:
+    """复合柱系列的共同零轴及外侧数值刻度确认图体，不以柱高上限截断高柱。"""
+    from .table_filled_grid import has_inflated_native_cjk_metrics
+
+    if not has_inflated_native_cjk_metrics(source.chars):
+        return []
+    output = []
+    for path in source.path_infos:
+        bars = path.rectangle_bboxes
+        if not path.fill_visible or len(bars) < 4:
+            continue
+        if not all(0.25 * em <= box[2] - box[0] <= 2 * em for box in bars):
+            continue
+        baseline = statistics.median(box[3] for box in bars)
+        ordered = sorted(bars, key=lambda box: box[0])
+        if (
+            sum(abs(box[3] - baseline) <= 0.2 * em for box in bars) < 0.75 * len(bars)
+            or not all(b[0] - a[2] >= 0.2 * em for a, b in zip(ordered, ordered[1:]))
+            or max(box[3] - box[1] for box in bars) < 3 * em
+        ):
+            continue
+        bounds = _bbox_union_many(bars)
+        peers = [
+            box
+            for other in source.path_infos
+            if other.fill_visible
+            for box in other.rectangle_bboxes
+            if any(
+                abs(box[0] - bar[0]) <= 0.1 * em and abs(box[2] - bar[2]) <= 0.1 * em and box[3] <= baseline + 0.2 * em
+                for bar in bars
+            )
+        ]
+        bounds = _bbox_union_many([bounds, *peers])
+        ticks = [
+            line
+            for line in source.lines
+            if re.fullmatch(r"\d+(?:[.,]\d+)?", line.text.strip())
+            and 0 <= bounds[0] - line.bbox[2] <= 4 * em
+            and bounds[1] - 2 * em <= _bbox_center_y(line.bbox) <= bounds[3] + em
+        ]
+        if len(ticks) < 3:
+            continue
+        axes = [
+            rule.bbox
+            for rule in source.drawing_lines
+            if rule.orientation == "horizontal"
+            and _bbox_axis_overlap_ratio(rule.bbox, bounds, axis="x") >= 0.9
+            and bounds[1] - 2 * em <= rule.bbox[1] <= bounds[3] + 0.2 * em
+        ]
+        labels = [
+            item.bbox
+            for item in source.path_infos
+            if item.fill_visible
+            and item.segment_count >= 8
+            and bounds[0] - 2 * em <= item.bbox[0] <= bounds[2] + em
+            and baseline <= item.bbox[1] <= baseline + 4 * em
+            and item.bbox[2] - item.bbox[0] <= 3 * em
+            and item.bbox[3] - item.bbox[1] <= 4 * em
+        ]
+        output.append(_bbox_union_many([bounds, *(line.bbox for line in ticks), *axes, *labels]))
+    return output
 
 
 def _raster_axis_tick_groups(numeric):
@@ -1586,8 +1777,10 @@ def _detect_native_bar_graphics(source: _PageSource, em: float) -> list[BBox]:
     """重复矩形的共同基线、不同长度及图外数值提供柱图证据，排除等宽表格底色。"""
 
     from ._graphic_geometry import compound_baseline_flags
+    from .table_filled_grid import _detect_tiled_fill_table_candidates
 
     baseline_flags = compound_baseline_flags(source, em)
+    table_bounds = [candidate.bbox for candidate in _detect_tiled_fill_table_candidates(source, [])]
 
     def compound_baseline_is_shared(path, horizontal=None):
         """复合路径整体须有稳定零轴，不能只取彩色表格某一行或某一列伪造柱组。"""
@@ -1614,6 +1807,7 @@ def _detect_native_bar_graphics(source: _PageSource, em: float) -> list[BBox]:
         and path.fill_rgba is not None
         and min(path.fill_rgba[:3]) < 230
         and max(box[2] - box[0], box[3] - box[1]) >= 2 * em
+        and not any(_bbox_overlap_in_first(box, table) >= 0.95 for table in table_bounds)
     ]
     outputs = []
     numeric_text = None
@@ -2107,6 +2301,10 @@ def _is_graphic_label_member(
 
     if re.match(r"^\s*(?:sources?|notes?|资料来源|数据来源|来源|注)\s*[:：]", line.text, re.I):
         return False
+    if _bbox_overlap_in_first(line.ink_bbox or line.bbox, core_bbox) < 0.5 and re.match(
+        r"^\s*(?:\d+[.、]\s*(?=[\u4e00-\u9fff])|[（(][一二三四五六七八九十]+[）)]|[一二三四五六七八九十]+、)", line.text
+    ):
+        return False
     center = (_bbox_center_x(line.bbox), _bbox_center_y(line.bbox))
     if _point_in_bbox(center, core_bbox):
         return True
@@ -2519,6 +2717,9 @@ def _build_raster_image_blocks(
     ):
         from .isolated_graphics import meaningful_small_raster
 
+        if _raster_is_native_text_background(source, bbox):
+            continue
+
         if _bbox_area(bbox) / page_area < _MIN_RASTER_IMAGE_PAGE_AREA_RATIO and not meaningful_small_raster(source, bbox):
             continue
         if any(
@@ -2582,6 +2783,15 @@ def _build_raster_image_blocks(
         blocks.append(block)
     blocks.sort(key=lambda block: (block["bbox"][1], block["bbox"][0]))
     return blocks, claimed
+
+
+def _raster_is_native_text_background(source: _PageSource, bbox: BBox) -> bool:
+    """覆盖版心的大底图前已有密集原生段落或目录时，底图不得认领这些文字。"""
+    if _bbox_area(bbox) < 0.6 * source.page_size[0] * source.page_size[1]:
+        return False
+    members = [line for line in source.lines if line.angle == 0 and _bbox_overlap_in_first(line.bbox, bbox) >= 0.9]
+    long = [line for line in members if len(line.text) >= 12]
+    return len(long) >= 8 and sum(len(line.text) for line in members) >= 300
 
 
 def _deduplicate_contained_photo_frames(source, bboxes):

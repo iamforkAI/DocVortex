@@ -999,6 +999,30 @@ def _classify_explicit_section_titles(
             grouped_sources.update({line.source_index, companion[0].source_index})
 
         for group in numbered_groups:
+            first_line, first_bbox = group[0]
+            # 编号标题折行后常有短的缩进尾行；共同汉字字体及独立正文起点确认完整题名。
+            first_fonts = {
+                (char.get("font") or {}).get("name")
+                for char in first_line.chars or []
+                if re.fullmatch(r"[\u4e00-\u9fff]", char.get("char", ""))
+            }
+            continuations = [
+                (line, bbox)
+                for line, bbox in geometry
+                if line is not first_line
+                and 0 <= bbox[1] - first_bbox[3] <= body_height
+                and 0.5 * body_height <= bbox[0] - first_bbox[0] <= 4 * body_height
+                and bbox[2] - bbox[0] <= 0.5 * (first_bbox[2] - first_bbox[0])
+                and re.fullmatch(r"[\u4e00-\u9fff]{2,16}", line.text.strip())
+                and (
+                    any((char.get("font") or {}).get("name") in first_fonts for char in line.chars or [])
+                    or first_line.native_cjk_style
+                    and line.native_cjk_style
+                    and first_line.native_cjk_style[:3] == line.native_cjk_style[:3]
+                )
+            ]
+            if continuations:
+                group.append(min(continuations, key=lambda item: item[1][1]))
             title_bbox = _bbox_union_many(
                 [bbox for _line, bbox in group],
             )
@@ -1044,13 +1068,15 @@ def _classify_explicit_section_titles(
                     local_page_width,
                     minimum_count=1,
                 )
-                or gap_above < 0.4 * body_height
+                or gap_above < (0.25 if continuations else 0.4) * body_height
             ):
                 continue
             for line, _bbox in group:
                 line.semantic_type = "paragraph_title"
                 line.structural_title = True
                 line.explicit_section_title = True
+                if continuations:
+                    line.title_band_id = first_line.source_index
 
         for line, bbox in geometry:
             if line.semantic_type is not None:

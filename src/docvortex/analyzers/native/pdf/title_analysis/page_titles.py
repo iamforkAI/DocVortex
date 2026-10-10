@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import statistics
+import unicodedata
 
 from .....schema import BBox
 from ..geometry import _bbox_axis_overlap_ratio, _bbox_center_x, _bbox_center_y, _bbox_union_many, _rotate_bbox_to_upright
@@ -21,6 +22,72 @@ from .common import _build_physical_title_gap_map, _line_inside_visual_container
 from .lane_titles import _classify_paragraph_titles_in_lane
 
 
+def _classify_secondary_front_matter_title(lines: list[_LineItem], page_size: tuple[float, float]) -> None:
+    """独立摘要、关键词与作者行共同确认后页题名，居中多行题名保持同一标题带。"""
+    width, height = page_size
+    if not any(re.match(r"^\s*(?:abstract|摘要)\s*[:：]", line.text, re.I) for line in lines):
+        return
+    if not any(re.match(r"^\s*(?:key\s*words?|关键词)\s*[:：]", line.text, re.I) for line in lines):
+        return
+    candidates = sorted(
+        [
+            line
+            for line in lines
+            if line.angle == 0
+            and line.semantic_type is None
+            and not line.title_suppressed
+            and 0.075 * height <= line.bbox[1] <= 0.18 * height
+            and abs(_bbox_center_x(line.bbox) - width / 2) <= 0.04 * width
+            and re.search(r"[A-Za-z]{3,}", line.text)
+        ],
+        key=lambda line: line.bbox[1],
+    )
+    if not 2 <= len(candidates) <= 4 or max(line.bbox[2] - line.bbox[0] for line in candidates) < 0.65 * width:
+        return
+    bottom = candidates[-1].bbox[3]
+    authors = [
+        line
+        for line in lines
+        if bottom < line.bbox[1] < bottom + 6 * _line_effective_height(candidates[-1], candidates[-1].bbox)
+        and re.search(r"\b[A-Z]{2,}\s+[A-Z][a-z]+", line.text)
+    ]
+    if not authors or min(line.bbox[1] for line in authors) - bottom < _line_effective_height(
+        candidates[-1], candidates[-1].bbox
+    ):
+        return
+    band = min(line.source_index for line in candidates)
+    for line in candidates:
+        line.semantic_type = "doc_title"
+        line.title_band_id = band
+        line.structural_title = True
+
+
+def _protect_secondary_front_matter_metadata(lines: list[_LineItem], page_size: tuple[float, float]) -> None:
+    """译文题名和摘要间的带编号机构行保留作者元数据身份。"""
+    abstracts = [
+        line.bbox[1]
+        for line in lines
+        if re.match(r"^\s*(?:abstract|摘要)\s*[:：]", unicodedata.normalize("NFKC", line.text), re.I)
+    ]
+    for line in lines:
+        # 带机构编号且位于译文题名与摘要间的英文行是作者元数据，不能用参考栏字号基线晋升。
+        normalized = unicodedata.normalize("NFKC", line.text)
+        if (
+            line.semantic_type is None
+            and re.match(r"^\s*\d{1,2}[A-Z][a-z]", normalized)
+            and any(line.bbox[3] < top <= line.bbox[3] + 12 * _line_effective_height(line, line.bbox) for top in abstracts)
+            and any(
+                peer.bbox[3] < line.bbox[1]
+                and line.bbox[1] - peer.bbox[3] <= 8 * _line_effective_height(peer, peer.bbox)
+                and peer.bbox[2] - peer.bbox[0] >= 0.6 * page_size[0]
+                and len(re.findall(r"[A-Za-z]", unicodedata.normalize("NFKC", peer.text))) >= 20
+                for peer in lines
+            )
+        ):
+            line.semantic_type = "text"
+            line.title_suppressed = True
+
+
 def _classify_page_titles(
     lines: list[_LineItem],
     page_size: tuple[float, float],
@@ -33,6 +100,9 @@ def _classify_page_titles(
 ) -> None:
     """只用页面几何与字体排版标注首页文档标题和各页段落标题。"""
 
+    if page_index > 0:
+        _classify_secondary_front_matter_title(lines, page_size)
+        _protect_secondary_front_matter_metadata(lines, page_size)
     for angle in sorted({line.angle for line in lines if line.semantic_type is None and not line.title_suppressed}):
         line_geometry = [
             (line, _rotate_bbox_to_upright(line.bbox, page_size, angle))

@@ -460,9 +460,11 @@ def _continues_local_body_row(
         for member, _member_bbox in previous_visual_row
         if member.font_signature is not None and member.font_coverage >= 0.5
     ]
+    shared_glyph_style = _mixed_script_rows_share_body_glyphs(previous_line, line)
     if (
         line.font_signature is not None
         and previous_style_members
+        and not shared_glyph_style
         and not any(
             _font_signatures_share_family(member.font_signature, line.font_signature)
             and not _font_weights_conflict(member, line)
@@ -481,11 +483,32 @@ def _continues_local_body_row(
         rows[index],
     )
     return (
-        0.8 <= line_height / previous_height <= 1.25
+        (0.8 <= line_height / previous_height <= 1.25 or shared_glyph_style)
         and previous_bbox[2] - previous_bbox[0] >= 0.75 * lane_width
         and abs(bbox[0] - previous_bbox[0]) <= 2.0 * pair_height
         and -0.25 * pair_height <= gap <= profile.regular_gap + pair_height
     )
+
+
+def _mixed_script_rows_share_body_glyphs(previous: _LineItem, current: _LineItem) -> bool:
+    """混排导致 dominant font 改变时，重复汉字字体、实际尺度和字重仍证明正文连续。"""
+    if previous.native_cjk_style and current.native_cjk_style and len(current.text) >= 25:
+        before, after = previous.native_cjk_style, current.native_cjk_style
+        return before[:3] == after[:3] and before[3] > 0 and 0.9 <= after[3] / before[3] <= 1.1
+    before = [char for char in previous.chars or [] if re.fullmatch(r"[\u4e00-\u9fff]", char.get("char", ""))]
+    after = [char for char in current.chars or [] if re.fullmatch(r"[\u4e00-\u9fff]", char.get("char", ""))]
+    if len(before) < 3 or not after or len(current.text) < 25:
+        return False
+    shared = {tuple((char.get("font") or {}).get(key) for key in ("name", "flags", "weight")) for char in before}
+    matching = [
+        char for char in after if tuple((char.get("font") or {}).get(key) for key in ("name", "flags", "weight")) in shared
+    ]
+    if not matching:
+        return False
+    heights = [char["bbox"][3] - char["bbox"][1] for char in before]
+    current_height = statistics.median(char["bbox"][3] - char["bbox"][1] for char in matching)
+    previous_height = statistics.median(heights)
+    return previous_height > 0 and 0.9 <= current_height / previous_height <= 1.1
 
 
 def _is_continuous_field_row(

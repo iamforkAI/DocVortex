@@ -2013,7 +2013,7 @@ def _build_marginal_candidate(
 ) -> _MarginalCandidate | None:
     """把页面上下百分之十五内的常规小行转换成跨页比较候选。"""
 
-    if line.semantic_type not in {None, "page_footnote"}:
+    if line.semantic_type not in {None, "page_footnote"} or line.caption_start:
         return None
     local_bbox = _rotate_bbox_to_upright(line.bbox, page_size, line.angle)
     local_page_size = (page_size[1], page_size[0]) if line.angle in {90, 270} else page_size

@@ -74,6 +74,33 @@ def _recover_native_table_html(
     return recovered[0] if recovered is not None else ""
 
 
+def _overlapping_table_character_repairs(source: _PageSource) -> dict[int, BBox]:
+    """同字体汉字的实际墨迹和字宽证明宽松框异常时，按原生基线恢复聚行尺度。"""
+    groups = {}
+    for char in source.chars:
+        font = char.get("font") or {}
+        groups.setdefault((font.get("name"), font.get("weight"), font.get("flags")), []).append(char)
+    repairs = {}
+    for chars in groups.values():
+        anchors = [
+            char
+            for char in chars
+            if re.fullmatch(r"[\u4e00-\u9fff]", char.get("char", "")) and char.get("tight_bbox") and char.get("origin")
+        ]
+        if len(anchors) < 20:
+            continue
+        em = statistics.median(char["bbox"][2] - char["bbox"][0] for char in anchors)
+        loose = statistics.median(char["bbox"][3] - char["bbox"][1] for char in anchors)
+        ink = statistics.median(char["tight_bbox"][3] - char["tight_bbox"][1] for char in anchors)
+        if em <= 0 or loose < 2.2 * em or not 0.5 * em <= ink <= 1.4 * em:
+            continue
+        for char in chars:
+            box, origin = char.get("bbox"), char.get("origin")
+            if box and origin and char.get("char_idx") is not None and box[3] - box[1] >= 2 * em:
+                repairs[char["char_idx"]] = (box[0], origin[1] - 0.85 * em, box[2], origin[1] + 0.15 * em)
+    return repairs
+
+
 def _materialize_table_blocks(
     source: _PageSource,
     candidates: list[_TableCandidate],
@@ -90,7 +117,7 @@ def _materialize_table_blocks(
     accepted_candidate_bboxes: list[BBox] = []
     claimed: set[int] = set()
     # 只复制已有强证据校准的字符，保持原始来源记录及字符身份不变；未校准文档继续原路径。
-    calibrated = calibrated_char_bboxes or {}
+    calibrated = {**_overlapping_table_character_repairs(source), **(calibrated_char_bboxes or {})}
     native_chars = (
         tuple(
             dict(char, bbox=calibrated[char["char_idx"]]) if char.get("char_idx") in calibrated else char

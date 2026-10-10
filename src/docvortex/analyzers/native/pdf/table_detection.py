@@ -26,7 +26,7 @@ from .geometry import (
 from .table_constants import _TABLE_CONTINUATION_RE
 from .table_annotations import _table_caption_candidates
 from .inline.detection import _font_styles_from_metadata
-from .table_filled_grid import _detect_filled_grid_table_candidates
+from .table_filled_grid import _detect_filled_grid_table_candidates, _detect_tiled_fill_table_candidates
 from .table_rules import (
     _RuleCandidateDraft,
     _build_closed_rule_grid_candidates,
@@ -51,6 +51,12 @@ def _detect_table_candidates(
         source.page_size,
         excluded_bboxes,
     )
+    tiled = _detect_tiled_fill_table_candidates(source, excluded_bboxes)
+    filled_grid_candidates = [
+        candidate
+        for candidate in filled_grid_candidates
+        if not any(_bbox_overlap_in_smaller(candidate.bbox, item.bbox) >= 0.9 for item in tiled)
+    ] + tiled
     filled_grid_bboxes = [candidate.bbox for candidate in filled_grid_candidates]
     rule_candidates: list[_TableCandidate] = []
     angles = sorted({line.angle for line in source.lines})
@@ -77,7 +83,9 @@ def _detect_table_candidates(
         local_excluded_bboxes = [
             _expand_bbox(
                 _rotate_bbox_to_upright(bbox, source.page_size, angle),
-                2.5 * median_height,
+                min(2.5 * median_height, 0.01 * source.page_size[0])
+                if any(bbox == item.bbox for item in tiled)
+                else 2.5 * median_height,
             )
             for bbox in [*excluded_bboxes, *filled_grid_bboxes]
         ]
@@ -175,10 +183,53 @@ def _detect_table_candidates(
         source,
         candidates,
     )
+    _bind_short_native_grid_captions(source, candidates)
     return sorted(
         candidates,
         key=lambda candidate: (candidate.bbox[1], candidate.bbox[0]),
     )
+
+
+def _bind_short_native_grid_captions(source: _PageSource, candidates: list[_TableCandidate]) -> None:
+    """异常字框页把紧贴网格的独立短中文题名绑定到表，拒绝同基线多列表头。"""
+    from .table_filled_grid import has_inflated_native_cjk_metrics
+
+    if not has_inflated_native_cjk_metrics(source.chars):
+        return
+    em = statistics.median(
+        char["bbox"][2] - char["bbox"][0] for char in source.chars if re.fullmatch(r"[\u4e00-\u9fff]", char.get("char", ""))
+    )
+    boxes = {
+        line.source_index: _bbox_union_many([char["tight_bbox"] for char in line.chars or [] if char.get("tight_bbox")])
+        or line.bbox
+        for line in source.lines
+    }
+    owned = {index for candidate in candidates for annotation in candidate.annotations for index in annotation.line_indices}
+    for candidate in candidates:
+        if candidate.angle:
+            continue
+        bounds = candidate.core_bbox or candidate.bbox
+        for line in source.lines:
+            box = boxes[line.source_index]
+            if (
+                line.source_index in owned
+                or line.angle
+                or not re.fullmatch(r"[\u4e00-\u9fff]{8,35}", line.text.strip())
+                or not 0 < bounds[1] - box[3] <= 1.25 * em
+                or abs(box[0] - bounds[0]) > em
+                or box[2] - box[0] >= 0.6 * (bounds[2] - bounds[0])
+            ):
+                continue
+            if any(
+                other is not line
+                and abs(_bbox_center_y(boxes[other.source_index]) - _bbox_center_y(box)) <= 0.5 * em
+                and bounds[0] <= _bbox_center_x(boxes[other.source_index]) <= bounds[2]
+                for other in source.lines
+            ):
+                continue
+            candidate.annotations.append(_TableAnnotation("caption", box, {line.source_index}, {line.source_index: box}))
+            candidate.line_indices.add(line.source_index)
+            owned.add(line.source_index)
 
 
 def _detect_aligned_numeric_tables(source: _PageSource, excluded: list[BBox]) -> list[_TableCandidate]:
@@ -2502,7 +2553,7 @@ def _externalize_table_continuation_captions(
         )
 
 
-def has_native_closed_grid(source, candidate):
+def has_native_closed_grid(source, candidate, *, allow_two_by_two: bool = False):
     """真实横竖边界贯穿候选且多行列含原生文字时，表格不应被附近Figure图题认领。"""
     if candidate.angle != 0:
         return False
@@ -2514,7 +2565,7 @@ def has_native_closed_grid(source, candidate):
         return False
     width, height = box[2] - box[0], box[3] - box[1]
     members = [line for line in source.lines if line.source_index in candidate.line_indices]
-    if len(members) < 6 or width <= 0 or height <= 0:
+    if len(members) < (4 if allow_two_by_two else 6) or width <= 0 or height <= 0:
         return False
     em = statistics.median(line.effective_height for line in members if line.effective_height > 0)
     tolerance = max(1.0, 0.2 * em)
@@ -2536,7 +2587,7 @@ def has_native_closed_grid(source, candidate):
     ]
     xs = sorted({round((rule.bbox[0] + rule.bbox[2]) / 2, 2) for rule in vertical})
     ys = sorted({round((rule.bbox[1] + rule.bbox[3]) / 2, 2) for rule in horizontal})
-    if len(xs) < 3 or len(ys) < 4 or min(xs[0] - box[0], ys[0] - box[1]) < -tolerance:
+    if len(xs) < 3 or len(ys) < (3 if allow_two_by_two else 4) or min(xs[0] - box[0], ys[0] - box[1]) < -tolerance:
         return False
     if max(abs(xs[0] - box[0]), abs(xs[-1] - box[2]), abs(ys[0] - box[1]), abs(ys[-1] - box[3])) > tolerance:
         return False
@@ -2544,4 +2595,4 @@ def has_native_closed_grid(source, candidate):
         (sum(x < (line.bbox[0] + line.bbox[2]) / 2 for x in xs), sum(y < (line.bbox[1] + line.bbox[3]) / 2 for y in ys))
         for line in members
     }
-    return len({column for column, _ in occupied}) >= 2 and len({row for _, row in occupied}) >= 3
+    return len({column for column, _ in occupied}) >= 2 and len({row for _, row in occupied}) >= (2 if allow_two_by_two else 3)

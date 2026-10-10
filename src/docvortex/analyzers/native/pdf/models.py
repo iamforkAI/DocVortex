@@ -137,6 +137,8 @@ class _LineItem:
     font_coverage: float = 0.0
     dominant_font_weight: float | None = None
     median_glyph_width: float | None = None
+    # 释放原字符后保留少量汉字排版证据，混排 dominant font 改变仍可核验正文连续。
+    native_cjk_style: tuple[str, int, float, float] | None = None
     leading_emphasis_width: float | None = None
     leading_typography_width: float | None = None
     split_from_row: bool = False
@@ -366,6 +368,8 @@ class _PreparedPage:
     page_footnote_groups: list[set[int]] = field(default_factory=list)
     reference_regions: list[BBox] = field(default_factory=list)
     numbered_references: bool = False
+    # 方括号文献区中的年代/卷页续行不能被小数点编号误作新条目。
+    bracketed_reference_numbers: bool = False
     script_lines: list[PDFTextScriptLine] = field(default_factory=list)
     formula_candidate_lines: list[_LineItem] = field(default_factory=list)
     formula_ink_bboxes: list[BBox] = field(default_factory=list)
