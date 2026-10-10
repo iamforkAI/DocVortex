@@ -1,0 +1,1006 @@
+{
+  "schema_version": 1,
+  "baseline_tag": "v0.5.15",
+  "baseline_commit": "477a182c24c032c93cd6620acedee36d34bc4ad8",
+  "reviewed_at": "2026-10-11",
+  "scope": "Only the 25 reviewed history pages; block counts, types, order and coordinates unchanged. Strict fingerprint assertions remain enabled.",
+  "public_validation": [
+    {
+      "name": "mixed_text_layout_sample",
+      "version": "0.5.15",
+      "pages": 24,
+      "assets": 19,
+      "missing_assets": [],
+      "changed_text_preserved": true,
+      "bundle_equal": true
+    },
+    {
+      "name": "中文论文",
+      "version": "0.5.15",
+      "pages": 10,
+      "assets": 17,
+      "missing_assets": [],
+      "changed_text_preserved": true,
+      "bundle_equal": true
+    },
+    {
+      "name": "中文论文2",
+      "version": "0.5.15",
+      "pages": 23,
+      "assets": 21,
+      "missing_assets": [],
+      "changed_text_preserved": true,
+      "bundle_equal": true
+    },
+    {
+      "name": "中文论文3",
+      "version": "0.5.15",
+      "pages": 4,
+      "assets": 3,
+      "missing_assets": [],
+      "changed_text_preserved": true,
+      "bundle_equal": true
+    },
+    {
+      "name": "中文论文4",
+      "version": "0.5.15",
+      "pages": 5,
+      "assets": 10,
+      "missing_assets": [],
+      "changed_text_preserved": true,
+      "bundle_equal": true
+    }
+  ],
+  "decisions": [
+    {
+      "name": "mixed_text_layout_sample",
+      "path": "tests/unittest/pdfs/flash_layout/mixed_text_layout_sample.pdf.xor",
+      "source_sha256": "87d98f6f4e42152c38b0a1f8dcfefa3e5ac163cc086a6f37169cabadf77bd107",
+      "page": 6,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 2,
+      "generated_cjk_candidates": 2,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "3c2f961c05bd5bf3ffd29ae638959358fad7f0b3d68eb2abc007e9ca1adeb6a9",
+        "bbox_fingerprint": "856fc164f910ecb6ee55d96d7c1f89eaecd4a4ef142a4196f2cb31728d363fc0"
+      },
+      "new": {
+        "fingerprint": "86ceac5deb0f2faa51f89937c10de11da875e146f704ac59d33c58b73c34204d",
+        "bbox_fingerprint": "38f8887d126c0429f7c14ca0c3e071067b900cc00c197062b789309e669cef4e"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/01-source.png",
+          "sha256": "bb4d0178402907b99a1bd0b975a4263b8a5cd256c43eb4186fe7eecdab39e294"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/01-v0.5.15.png",
+          "sha256": "2ad57d12fc100d281f8a690f0026f97b447c422a6b019edfa3f1ef8ac571fba1"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/01-candidate.png",
+          "sha256": "2ad57d12fc100d281f8a690f0026f97b447c422a6b019edfa3f1ef8ac571fba1"
+        }
+      ],
+      "source_file_sha256": "fc3150c68c9f88b78d10dd2c321871f63a2e08be2099528fe00cf62d8a17e3d3"
+    },
+    {
+      "name": "中文论文",
+      "path": "demo/pdfs/中文论文.pdf",
+      "source_sha256": "7fe627f5c376d1fd32a231648a6d9f3cd95a071e0773bb4a00cb9d359ea20a9a",
+      "page": 1,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 3,
+      "generated_cjk_candidates": 3,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "29c6ee99392dc49b632c3bd813817d09eeb3dbb9ef87edb513612b2c0e08a91b",
+        "bbox_fingerprint": "e03fd27a178ae2df253a985491834a688dd95e8c3c709480b7b2033045a8a2ab"
+      },
+      "new": {
+        "fingerprint": "baf8194901c64ccb81abab9c81e63f187ed38c7775e17ff47b9d76b43bfff17c",
+        "bbox_fingerprint": "e13964c3d9b10b91cf9ba1f9850a8ba2ef8a6ffac7b793552d59fe9821828dd3"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/02-source.png",
+          "sha256": "e97f56ba627ec4e6a988f321765456a2aab055a389214522910e62093af20884"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/02-v0.5.15.png",
+          "sha256": "a527ee90656d171d20d76dbb551b0e3eabf9990a3b8a387e8d6e899048d32a99"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/02-candidate.png",
+          "sha256": "a527ee90656d171d20d76dbb551b0e3eabf9990a3b8a387e8d6e899048d32a99"
+        }
+      ],
+      "source_file_sha256": "7fe627f5c376d1fd32a231648a6d9f3cd95a071e0773bb4a00cb9d359ea20a9a"
+    },
+    {
+      "name": "中文论文",
+      "path": "demo/pdfs/中文论文.pdf",
+      "source_sha256": "7fe627f5c376d1fd32a231648a6d9f3cd95a071e0773bb4a00cb9d359ea20a9a",
+      "page": 9,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。原页有完整编号参考条目，新参考起止证据保留逐项边界。",
+      "deleted_spaces": 12,
+      "generated_cjk_candidates": 12,
+      "reference_flag_updates": 22,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "71e1cbdb4ada5c94684e49dacb15e56e138aeb8f578be2424b8c6e868c6d1d78",
+        "bbox_fingerprint": "8369e4b0f4e791e35784b7c80e99bf3a8c1a0c3da6241c32ab7a5dc1731f10e2"
+      },
+      "new": {
+        "fingerprint": "be309250df5765ff22eeaffaf7e19796e58ad9b9c6306269d8c14195343d0961",
+        "bbox_fingerprint": "cb129570b3a501cf1af3f680bfb769d58d28a539615584226ffa0c3ddaef3e5a"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/03-source.png",
+          "sha256": "1c448c0f0be85dd22a96d56222b37cbec6899e11ff98bd1577b734e2da9f5017"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/03-v0.5.15.png",
+          "sha256": "cd5290b95cb51901d0bdb805860860932c8a1bc99104c6e9e03e95c15807aa1d"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/03-candidate.png",
+          "sha256": "cd5290b95cb51901d0bdb805860860932c8a1bc99104c6e9e03e95c15807aa1d"
+        }
+      ],
+      "source_file_sha256": "7fe627f5c376d1fd32a231648a6d9f3cd95a071e0773bb4a00cb9d359ea20a9a"
+    },
+    {
+      "name": "中文论文2",
+      "path": "demo/pdfs/中文论文2.pdf",
+      "source_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad",
+      "page": 1,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 11,
+      "generated_cjk_candidates": 11,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "4fffa0c3dcf65e65cbdde37275752af66aa51727a5597b051b697ccc58e4ce6d",
+        "bbox_fingerprint": "98567e1df25af1ef9296fb24085c481de8685d7eff35d84015bed65ac8115dd2"
+      },
+      "new": {
+        "fingerprint": "1da42be2d3cebfec44ed3ea1ad9be662fb7373bd6886d5e07cb00937a3d21f5d",
+        "bbox_fingerprint": "725faec30b895396f9037c105b1e2d1d8b61f6bbc36103804c407e94e66cd991"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/04-source.png",
+          "sha256": "62737b31878a35aa9a4202f660afdda8166700d4ab9a5463a61886c157be09e2"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/04-v0.5.15.png",
+          "sha256": "6c29e05e530384dd95dc3e7c1422feab4a764824c738aa500293f7fa03d6035c"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/04-candidate.png",
+          "sha256": "6c29e05e530384dd95dc3e7c1422feab4a764824c738aa500293f7fa03d6035c"
+        }
+      ],
+      "source_file_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad"
+    },
+    {
+      "name": "中文论文2",
+      "path": "demo/pdfs/中文论文2.pdf",
+      "source_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad",
+      "page": 2,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 13,
+      "generated_cjk_candidates": 13,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "db63b518c4b9921f337e999c7dfdf3beeb5639feec36dc38996854c6acf4d0ad",
+        "bbox_fingerprint": "add9c60de0e40c709667f2faf324bd1c59d4acc976e9816f3ba8e3cf851071a3"
+      },
+      "new": {
+        "fingerprint": "777a952c6041e058ac210c0102473ed150c3902239cb4803dc16cc52504ad18f",
+        "bbox_fingerprint": "0ca93c4a7fa157c5b4c79ce9f0ac6463697e44a871c87851a77ba43a05f3b48e"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/05-source.png",
+          "sha256": "68b18da9a6b4f552f6f14020ba9a1f72ab9f7f77fb1f90afc266dc1e98d0dfb6"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/05-v0.5.15.png",
+          "sha256": "590600a7efd3fee8c646ef24cd115a8d746ad0a93dd7cf1bcd7e28f8ee3f5785"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/05-candidate.png",
+          "sha256": "590600a7efd3fee8c646ef24cd115a8d746ad0a93dd7cf1bcd7e28f8ee3f5785"
+        }
+      ],
+      "source_file_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad"
+    },
+    {
+      "name": "中文论文2",
+      "path": "demo/pdfs/中文论文2.pdf",
+      "source_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad",
+      "page": 3,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 49,
+      "generated_cjk_candidates": 49,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "8365d1df340a2562f380525e3cbc2a0b14296ee3b5fa0d1f1a5b50bc27c8b483",
+        "bbox_fingerprint": "d7154008f1c8dc1da84bbd2a39d7fcab6962d633df31c06974d52c4936721fe2"
+      },
+      "new": {
+        "fingerprint": "64783aa58c8d5ddd88ad8571e630748110de8cb04266954f135ed965bd3c4f58",
+        "bbox_fingerprint": "f0032c0a93851911b1f75c1845a48ce7f1697dcb79d49bf6cbe3eedf776be48b"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/06-source.png",
+          "sha256": "9bfbd247fc8ac3b3bdf39320e5eed9594b9d1e7e8af769266db966d1ff391fe6"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/06-v0.5.15.png",
+          "sha256": "a360d7fc9b96b751a910adf35544c70ba6eb5383bcf7ebe19c34e638aeb0ed21"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/06-candidate.png",
+          "sha256": "a360d7fc9b96b751a910adf35544c70ba6eb5383bcf7ebe19c34e638aeb0ed21"
+        }
+      ],
+      "source_file_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad"
+    },
+    {
+      "name": "中文论文2",
+      "path": "demo/pdfs/中文论文2.pdf",
+      "source_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad",
+      "page": 4,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 127,
+      "generated_cjk_candidates": 127,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "1d07f011b69a8a09b8c3e439f733af92af4b977486dd4d2fa4a61c552d91fed4",
+        "bbox_fingerprint": "6515311ce914300bb3d3bc5bc0e652cb31772909286618544b99f551c827202a"
+      },
+      "new": {
+        "fingerprint": "9d6fa42b80414310a503efde9565103029ca83abc8b7e1a257a8a08d3b58bfd5",
+        "bbox_fingerprint": "89df37dd33b7ba5d61ed8cc4a562c9db945d05c35e748e8edbfe475057c2e123"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/07-source.png",
+          "sha256": "41dbcaedd040d902cf2956e5e5fbba748c3051a610ebe3ef516719aca3196e2f"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/07-v0.5.15.png",
+          "sha256": "cc5a8155ebec9c31f47bfeb52ab3cc94da2a5773aa45a68b99dc1d6ce5bbccd6"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/07-candidate.png",
+          "sha256": "cc5a8155ebec9c31f47bfeb52ab3cc94da2a5773aa45a68b99dc1d6ce5bbccd6"
+        }
+      ],
+      "source_file_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad"
+    },
+    {
+      "name": "中文论文2",
+      "path": "demo/pdfs/中文论文2.pdf",
+      "source_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad",
+      "page": 5,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 67,
+      "generated_cjk_candidates": 67,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "4406f3363a62e600b9623e8d6f57f8e6722ca711d4c01ca8ed074f60a47ca633",
+        "bbox_fingerprint": "42a6c7afc1959e3ea2a19a62f6c00b155ed992a98a9176f15fb9c3d88de70d96"
+      },
+      "new": {
+        "fingerprint": "c28d59fe38b52801d5eb143b638bb623537aec59bd2ce0eefc099ffbb0a6beb2",
+        "bbox_fingerprint": "f1ac5a56568fd72c94b6148d2d5389fb1568ca1d6bb610e0b3d2d265f75afeac"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/08-source.png",
+          "sha256": "5af15361820d1e523de12cba94fa17b754ecb12a9811aa7dffcd9729c0494981"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/08-v0.5.15.png",
+          "sha256": "112c0640e8207928734413754aff0dbea6c34d79c49f04a62b23cfc8375f386c"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/08-candidate.png",
+          "sha256": "112c0640e8207928734413754aff0dbea6c34d79c49f04a62b23cfc8375f386c"
+        }
+      ],
+      "source_file_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad"
+    },
+    {
+      "name": "中文论文2",
+      "path": "demo/pdfs/中文论文2.pdf",
+      "source_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad",
+      "page": 6,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 97,
+      "generated_cjk_candidates": 97,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "a704dbd0f6aae12ee11925d0e8a43eaca06f296aaf54962c046cdfcf00ff9f8f",
+        "bbox_fingerprint": "c1dbd0ed5d9b988166bb8fe838fefd5d68070fb5cb14b7163a56e1f64b624d30"
+      },
+      "new": {
+        "fingerprint": "107923aefcc841782768085c845f339ebcd7df587fa828315f0cf3b8fe3c1b11",
+        "bbox_fingerprint": "4f045f4e6a16502a8864f9fd57820bcaa3047fb2f89277716162639450a7ae36"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/09-source.png",
+          "sha256": "c0e0b77ea0d9bbeccf551f1da5cdf4a68a3268cf17fa25bce3a2d4f0268c523a"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/09-v0.5.15.png",
+          "sha256": "1219b9565403d47afa6041b744971f97d7beb1ecfdc3ec58b5e8a7f65929cad5"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/09-candidate.png",
+          "sha256": "1219b9565403d47afa6041b744971f97d7beb1ecfdc3ec58b5e8a7f65929cad5"
+        }
+      ],
+      "source_file_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad"
+    },
+    {
+      "name": "中文论文2",
+      "path": "demo/pdfs/中文论文2.pdf",
+      "source_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad",
+      "page": 7,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 7,
+      "generated_cjk_candidates": 7,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "e5625fbff8dda5468116443423657ca22b91691a8798e231ecadd0d28cf22771",
+        "bbox_fingerprint": "97e36c6f5cc149c61163384bfbe7ed89216af97ad2fe5c08247b12644786fd35"
+      },
+      "new": {
+        "fingerprint": "e94dc2d6da2fe518423b588837788111a4a3441d541391bb40943e3e2fc845b8",
+        "bbox_fingerprint": "db0e8cd1108b2116c2489626e0a7e2a535257a5f42342bbe66d5751312cbbfbf"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/10-source.png",
+          "sha256": "6ec81f8c6668bf0d2a7ef2a25f23169c0c505fcae4853319ab55c5ec061ed585"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/10-v0.5.15.png",
+          "sha256": "f68b492e9edcbe5d123114b2a40c76900d92461173156ccba29806b4e1aae0de"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/10-candidate.png",
+          "sha256": "f68b492e9edcbe5d123114b2a40c76900d92461173156ccba29806b4e1aae0de"
+        }
+      ],
+      "source_file_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad"
+    },
+    {
+      "name": "中文论文2",
+      "path": "demo/pdfs/中文论文2.pdf",
+      "source_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad",
+      "page": 8,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 23,
+      "generated_cjk_candidates": 23,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "de772c5651761dc567982b8a8dfe63467a343a0cdb361b78b5d658e99bb4c57c",
+        "bbox_fingerprint": "c9189064679eaf4b28c6b6af21bce61b2679f4d99adb9f1711571741acfb6a74"
+      },
+      "new": {
+        "fingerprint": "bcbadda280a0f48ddb11d836c2ca6f2e9b52d576f3b93d216022f922597f1b1d",
+        "bbox_fingerprint": "b8aea15f659e79cd05c6d08909e4bf31c28ef718b6954627aba6f8ad8b0c1cff"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/11-source.png",
+          "sha256": "af22a29285c07159505a90efc93c18dd6b3a23da03313f77c805eae32d020d76"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/11-v0.5.15.png",
+          "sha256": "3e6fc6d54e5cf84b1029a99efd14e3005707826af63a68e772309615c1b2b345"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/11-candidate.png",
+          "sha256": "3e6fc6d54e5cf84b1029a99efd14e3005707826af63a68e772309615c1b2b345"
+        }
+      ],
+      "source_file_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad"
+    },
+    {
+      "name": "中文论文2",
+      "path": "demo/pdfs/中文论文2.pdf",
+      "source_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad",
+      "page": 9,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 59,
+      "generated_cjk_candidates": 59,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "3152d96d231540722c7665aca8e56447c7d9178d65463d318446d2f8f3bfa089",
+        "bbox_fingerprint": "4cfee9a5cec41f8bfce36d33166eff5a46887b8e1f30e50e8bf990a920146399"
+      },
+      "new": {
+        "fingerprint": "f2c94efa6bb8cfd7cc2d5a4656bab7f343e64ce0032bd58a2e2511b13278c32a",
+        "bbox_fingerprint": "76d0088b3516bfeb8a4e874c80dcf65e31bf9c3bf21a410e71bd2adcdae8c963"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/12-source.png",
+          "sha256": "7efdd3261c54beb43ca9a734dcf8235840c4de74ec485e99bd59b2d39aea10e0"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/12-v0.5.15.png",
+          "sha256": "643e19d8fab5491e64f55e727f8d60da93c5a7e72670569374c13d9d1d250914"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/12-candidate.png",
+          "sha256": "643e19d8fab5491e64f55e727f8d60da93c5a7e72670569374c13d9d1d250914"
+        }
+      ],
+      "source_file_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad"
+    },
+    {
+      "name": "中文论文2",
+      "path": "demo/pdfs/中文论文2.pdf",
+      "source_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad",
+      "page": 10,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 54,
+      "generated_cjk_candidates": 54,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "cc3aebf539cdd3e5e917fbf811e66f2cd67cd8c09fdf471810dfa9978c8f4c4e",
+        "bbox_fingerprint": "0142c4dd69d3e47c6f92f5db6f10ccf32d6a7f55e37ad5adbec55794d7eb2e1e"
+      },
+      "new": {
+        "fingerprint": "b2846d3f344878ed34c6cc39197553c83bf9856d940e5bd67a057de079927f40",
+        "bbox_fingerprint": "d5117d8bdfd24b84e29c6439290b2fbf269c3f7d6abaf3b395ef5d0f4158838d"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/13-source.png",
+          "sha256": "8af6f7fa20df87a10993e73412e94a9f6c61f11faefcd1eedb476d3bc7f14abd"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/13-v0.5.15.png",
+          "sha256": "229a56ff60062d2a398ef9e7afa7073b8b7fbacdb58a059252f7bb078a724584"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/13-candidate.png",
+          "sha256": "229a56ff60062d2a398ef9e7afa7073b8b7fbacdb58a059252f7bb078a724584"
+        }
+      ],
+      "source_file_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad"
+    },
+    {
+      "name": "中文论文2",
+      "path": "demo/pdfs/中文论文2.pdf",
+      "source_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad",
+      "page": 11,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 12,
+      "generated_cjk_candidates": 12,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "79b446b3f2f8792f82a010ef4832fbf69e0cb1ff9493d3a42e1b4db8e0e0e4dc",
+        "bbox_fingerprint": "2eaec2787337363990d670df4429beb9293d59c5864da80b695f305741de9ce8"
+      },
+      "new": {
+        "fingerprint": "1a9bdbb10662d0a9885e939c5ab542abd0a7a487a6ab3bd09b015a7d487f4c00",
+        "bbox_fingerprint": "2fa8a7f3dcda663721783ce6dee77271918afec59a989cd0cf52ef9d91c8b65a"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/14-source.png",
+          "sha256": "e662e73769e67d0992b8aa80c441dba557c579f17bcc99440d8da98c6ce8831a"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/14-v0.5.15.png",
+          "sha256": "970d859596307a965027a5e33aef891c9a44c1ca1492f77f31059593fc49fc03"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/14-candidate.png",
+          "sha256": "970d859596307a965027a5e33aef891c9a44c1ca1492f77f31059593fc49fc03"
+        }
+      ],
+      "source_file_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad"
+    },
+    {
+      "name": "中文论文2",
+      "path": "demo/pdfs/中文论文2.pdf",
+      "source_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad",
+      "page": 12,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 84,
+      "generated_cjk_candidates": 84,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "79271756a7a452afd7109f18d03c43b90825499c6da93a41d253edc869a0fc49",
+        "bbox_fingerprint": "30cb937f22ec646879b1e413a775cc7e9b3adb8114c82e3dca03c8080448cd17"
+      },
+      "new": {
+        "fingerprint": "bb986584a656623e8c713126ab17bc893080c6b1de34794f3fc9ebdc5876efb4",
+        "bbox_fingerprint": "2584f134794ce31da3573a127cc881627e335c580bd4f7fb8ae4aa8fc1c198b8"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/15-source.png",
+          "sha256": "6431bcded1f8c29e741e64b3c589efdf7a29e77fc18af9cdb167c47f18109a85"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/15-v0.5.15.png",
+          "sha256": "f1c5b8ba37296eb646a7be46bcafe7fbca12e039cdb3a151bc3d46062cb0dab0"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/15-candidate.png",
+          "sha256": "f1c5b8ba37296eb646a7be46bcafe7fbca12e039cdb3a151bc3d46062cb0dab0"
+        }
+      ],
+      "source_file_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad"
+    },
+    {
+      "name": "中文论文2",
+      "path": "demo/pdfs/中文论文2.pdf",
+      "source_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad",
+      "page": 13,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 44,
+      "generated_cjk_candidates": 44,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "62e6044cc7ef3d44625111b250962dbc6c79f99ccf1f55756dbdcbe2bb0ebf5a",
+        "bbox_fingerprint": "62d0d387be02dc42c0900a716ad93979ff19d5c9b099c6ab69cd7aa6be1256a9"
+      },
+      "new": {
+        "fingerprint": "0775fadea449edd417ffef9491b0b46ae52f26ae7ff1fe78980e5c242fc94017",
+        "bbox_fingerprint": "ff862a441b1bdfa5cce0111fbbedc3d61c82691513775974ddde9f65e02db899"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/16-source.png",
+          "sha256": "cb2ed2fab69bfad4abf0653eb7745dd2ec1e94495e3d0a391b4cb21c99a08b99"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/16-v0.5.15.png",
+          "sha256": "20d8b8b3646d8163d9cae6c5377dde824dd002f75451f409d72150eb23b24fd3"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/16-candidate.png",
+          "sha256": "20d8b8b3646d8163d9cae6c5377dde824dd002f75451f409d72150eb23b24fd3"
+        }
+      ],
+      "source_file_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad"
+    },
+    {
+      "name": "中文论文2",
+      "path": "demo/pdfs/中文论文2.pdf",
+      "source_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad",
+      "page": 14,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 32,
+      "generated_cjk_candidates": 32,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "66811a5da09b480467b9353001e35bbc781e0bd7201c67cde52a1dc02cd41721",
+        "bbox_fingerprint": "5696a39d99487f67a772f1249d83671eb2dbf10bfcad40ff7d8906eeb7512ae7"
+      },
+      "new": {
+        "fingerprint": "ea53b4ccc6fff25e997862e1408bce78e4fb56ab6d539a0da80a299803ef4a85",
+        "bbox_fingerprint": "b2b2480ddede7e108e7dae67e3f370eb9c475fe67408fb734c8417d074c2e84a"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/17-source.png",
+          "sha256": "3ef0f8360b374c724dad5cabc9ef6c8b75bf32fe36ebc4a371bf5ec1f519f302"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/17-v0.5.15.png",
+          "sha256": "ded0cd143ef56bea0351dfc6b6c79ef7258fc1d6a75765a24de0bb87a3e866b4"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/17-candidate.png",
+          "sha256": "ded0cd143ef56bea0351dfc6b6c79ef7258fc1d6a75765a24de0bb87a3e866b4"
+        }
+      ],
+      "source_file_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad"
+    },
+    {
+      "name": "中文论文2",
+      "path": "demo/pdfs/中文论文2.pdf",
+      "source_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad",
+      "page": 15,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 6,
+      "generated_cjk_candidates": 6,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "3baac3d5779ae212c27834d40ceb4badf5a336e7b719383b811da4e5e012bfb2",
+        "bbox_fingerprint": "cbe083c828024eb94fc56bdf4fd0d878653522a0f0f506d7890355366362ed1b"
+      },
+      "new": {
+        "fingerprint": "51b083ef3747c67540cb48278914397b031ab4df893602bf7cc9e4c52a18d8a4",
+        "bbox_fingerprint": "fdfb5be17fd46bef134b9998315c9e234bf1066c5cd0dfeaf3683708cc96afe1"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/18-source.png",
+          "sha256": "e2335d2c234f75c063daa6283f55ea27ea339650eca466c5e3e32da87e4371f1"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/18-v0.5.15.png",
+          "sha256": "5a664b95f16dd8b46994eaf05d7c41305b161738a65c254a905170439d87dfc6"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/18-candidate.png",
+          "sha256": "5a664b95f16dd8b46994eaf05d7c41305b161738a65c254a905170439d87dfc6"
+        }
+      ],
+      "source_file_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad"
+    },
+    {
+      "name": "中文论文2",
+      "path": "demo/pdfs/中文论文2.pdf",
+      "source_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad",
+      "page": 16,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 40,
+      "generated_cjk_candidates": 40,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "4f3538e6d8dacffb1a63bbeea39e43be6ec981c9ea5f613c46de7d007c01ac1a",
+        "bbox_fingerprint": "03d786416b1c889930c0d3870b66055eb86b5e14d08672c64253a25fbd8113b3"
+      },
+      "new": {
+        "fingerprint": "d0ce0fa01bfd107aea9c3cde30d9b8ae4c81c494af5c9fc4d8e852d1410e14b4",
+        "bbox_fingerprint": "ecdbd10aadc0492a19c5a294094aee70ca0123318456a4a425dd0918a735b870"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/19-source.png",
+          "sha256": "863a83dbf8a4fe76739855e617e61806b30459f68afa3263dec7ab99766463a8"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/19-v0.5.15.png",
+          "sha256": "9def73ac5331b550d611a0911302e967e927e14450eb84b6e3ed95a5eb2981ff"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/19-candidate.png",
+          "sha256": "9def73ac5331b550d611a0911302e967e927e14450eb84b6e3ed95a5eb2981ff"
+        }
+      ],
+      "source_file_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad"
+    },
+    {
+      "name": "中文论文3",
+      "path": "demo/pdfs/中文论文3.pdf",
+      "source_sha256": "a9edebcdff03ea03d80f61cfe0b5a875ea2f7122beacaf8177d59327eeab8154",
+      "page": 1,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 20,
+      "generated_cjk_candidates": 20,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "691868af009d91fbdc4d43127d66717d83f64405f551a4c7896ba7d704926558",
+        "bbox_fingerprint": "3069613cb30d68415e6f685c0e94f32bde89397e91835d4244f281454ff1f4b6"
+      },
+      "new": {
+        "fingerprint": "87c9633a175605fb183a8f5429a24d5e6177f8b4942e6876f910c572ca933159",
+        "bbox_fingerprint": "71aba18389ad9882470e4864dc51b14899db95bbd4aaf9c9542c0dd72808f29b"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/20-source.png",
+          "sha256": "198bad6d248752de0d984438d67af644983e2955c018ce0544cc0e682435c637"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/20-v0.5.15.png",
+          "sha256": "1fff158a1eb68f29a76f451ec238efeccfc5baf2ce97501b97fbf8b47d0594df"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/20-candidate.png",
+          "sha256": "1fff158a1eb68f29a76f451ec238efeccfc5baf2ce97501b97fbf8b47d0594df"
+        }
+      ],
+      "source_file_sha256": "a9edebcdff03ea03d80f61cfe0b5a875ea2f7122beacaf8177d59327eeab8154"
+    },
+    {
+      "name": "中文论文4",
+      "path": "demo/pdfs/中文论文4.pdf",
+      "source_sha256": "697f37feb86cb49c905ceac0074e2569969e25043c15768cf6c0a86973fdc899",
+      "page": 1,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 68,
+      "generated_cjk_candidates": 68,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "2f21bc49743de625d8be40a53c414ff2a0aabc4a87d4ec256417cc259fb1247f",
+        "bbox_fingerprint": "c253ba68ddcd512ddd80f9b38ece94648038887f11f32bdd3db7c084dd5ee253"
+      },
+      "new": {
+        "fingerprint": "4fa9566a49d5915ad53100d777b0c3aecd537d6a71c60e7477c135f9082e1768",
+        "bbox_fingerprint": "a6ea6eebee6ca16d16f762fc3eb90b9818d22a14429f1e947f919e293224d79a"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/21-source.png",
+          "sha256": "a55cdcc2958a855237676c294c9d24439a33b2f55a617618d021f498c7c5e803"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/21-v0.5.15.png",
+          "sha256": "55d21e07b2877852594bd3f94ca7cc332280e1bed8ac9894c3585894856f1c93"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/21-candidate.png",
+          "sha256": "55d21e07b2877852594bd3f94ca7cc332280e1bed8ac9894c3585894856f1c93"
+        }
+      ],
+      "source_file_sha256": "697f37feb86cb49c905ceac0074e2569969e25043c15768cf6c0a86973fdc899"
+    },
+    {
+      "name": "中文论文4",
+      "path": "demo/pdfs/中文论文4.pdf",
+      "source_sha256": "697f37feb86cb49c905ceac0074e2569969e25043c15768cf6c0a86973fdc899",
+      "page": 2,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 106,
+      "generated_cjk_candidates": 106,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "6458eb642b1871697154a66b65b6250425fa747bb1ea25dca15a719c5859a6cb",
+        "bbox_fingerprint": "297181f5f44331170de718382feffa8feec6d0acf49f059bbf5d7637dc244d4d"
+      },
+      "new": {
+        "fingerprint": "842e2044504acdb8f2fefdc7079e69363d3d4bc372e669abae5397cd534881dd",
+        "bbox_fingerprint": "a2a49308454dc0f616879b6b7d67fc50d8a28952c5f048fd77a4594454bfe7f8"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/22-source.png",
+          "sha256": "c520783429a92fc7f06f223b44839fea61f4774cee12d376a35e0e8dad3c81e3"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/22-v0.5.15.png",
+          "sha256": "4a64af9663df2d8075df37190b552aa7fabd4358eddd6eb6cec460718c47f9d3"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/22-candidate.png",
+          "sha256": "4a64af9663df2d8075df37190b552aa7fabd4358eddd6eb6cec460718c47f9d3"
+        }
+      ],
+      "source_file_sha256": "697f37feb86cb49c905ceac0074e2569969e25043c15768cf6c0a86973fdc899"
+    },
+    {
+      "name": "中文论文4",
+      "path": "demo/pdfs/中文论文4.pdf",
+      "source_sha256": "697f37feb86cb49c905ceac0074e2569969e25043c15768cf6c0a86973fdc899",
+      "page": 3,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 89,
+      "generated_cjk_candidates": 89,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "ceb9ca3a2a1222c2d22552dcd3a508e24e79a23b9f8c284b96a8b95c2096bc28",
+        "bbox_fingerprint": "60b63443037dde9fee35f5290fbbcc371250290dc83b16c58af95a2c31291cd5"
+      },
+      "new": {
+        "fingerprint": "97e967ef49c07f0cd790274a4abadc42d239253e7e5f6bcc3d3b84916720d768",
+        "bbox_fingerprint": "3dc9276953b1b05cbe11f618d95eb39f39297926677a2cf03e12241d773fc6e5"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/23-source.png",
+          "sha256": "9c4d0e54aac7ecce3a1bb0f3b14ffd4aeb4b785e372c549c6fe8b68cea2f3293"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/23-v0.5.15.png",
+          "sha256": "f8f312386ca26291faeeb306470cffc35690643619b3b20bd1c8b3d9950cb53f"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/23-candidate.png",
+          "sha256": "f8f312386ca26291faeeb306470cffc35690643619b3b20bd1c8b3d9950cb53f"
+        }
+      ],
+      "source_file_sha256": "697f37feb86cb49c905ceac0074e2569969e25043c15768cf6c0a86973fdc899"
+    },
+    {
+      "name": "中文论文4",
+      "path": "demo/pdfs/中文论文4.pdf",
+      "source_sha256": "697f37feb86cb49c905ceac0074e2569969e25043c15768cf6c0a86973fdc899",
+      "page": 4,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。",
+      "deleted_spaces": 34,
+      "generated_cjk_candidates": 34,
+      "reference_flag_updates": 0,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "cc4cfcadf562e56c9b326f243daac480dd178391872eed37cbcef4e047192777",
+        "bbox_fingerprint": "e6e30a111410323ca0dc3add1ef3b83e31bc2976033d650dc67785bbfc1bcd7a"
+      },
+      "new": {
+        "fingerprint": "c5c15e0e6b59ae76d705c69d92431901938e2793bfa84b81ca12eeab16182e76",
+        "bbox_fingerprint": "ba1ca6fa2fa113c6818155b1374544473ffdd603d0920e65e0967b6e883d84a1"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/24-source.png",
+          "sha256": "2ff6e13cc9706621222b13b9c1fef7503711ed8252675cf1ff2b5d6b6cde0c82"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/24-v0.5.15.png",
+          "sha256": "d823dc232f5ee1c795e226fb3209972c388e053c1cb4ce77da8b1ecb3253da6e"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/24-candidate.png",
+          "sha256": "d823dc232f5ee1c795e226fb3209972c388e053c1cb4ce77da8b1ecb3253da6e"
+        }
+      ],
+      "source_file_sha256": "697f37feb86cb49c905ceac0074e2569969e25043c15768cf6c0a86973fdc899"
+    },
+    {
+      "name": "中文论文4",
+      "path": "demo/pdfs/中文论文4.pdf",
+      "source_sha256": "697f37feb86cb49c905ceac0074e2569969e25043c15768cf6c0a86973fdc899",
+      "page": 5,
+      "decision": "accept_improvement",
+      "visual_reviewed": true,
+      "observation": "确认生成的中文边界空格删除；块数、类型、顺序、坐标及前后标框像素一致。原页有完整编号参考条目，新参考起止证据保留逐项边界。",
+      "deleted_spaces": 55,
+      "generated_cjk_candidates": 55,
+      "reference_flag_updates": 8,
+      "layout_pixels_equal": true,
+      "baseline_code_sha256": "2a99bfa59449a38e4be20e72d2814f7fbdd601e6dd069b9c349ddc27c716f926",
+      "candidate_code_sha256": "65ed02464d18aec53eb04b41aa66552353b0f69d41e086b46a61fa3d726b13aa",
+      "old": {
+        "fingerprint": "0c61c6b4193888c26754fdfad68c3276f12859b3ee22a9ca46d3d64d137a9a70",
+        "bbox_fingerprint": "b690e1d0373f11f58d441073cf69369473b0d8f242246c4142506b95e5fe2d18"
+      },
+      "new": {
+        "fingerprint": "6e9c55bc9e187232b6487d3ba7d21659410a233bf648e48dcf0e8afabbcecfcc",
+        "bbox_fingerprint": "0b3b5f3571d7a257e625301365b402e420d08d6d524a135332df16e69ccd5e6c"
+      },
+      "images": [
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/25-source.png",
+          "sha256": "d50c1db1c2d283a16c7534ff4472da8ab78a868b589be739e790198107e09f0c"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/25-v0.5.15.png",
+          "sha256": "b5618a4dec57741eddf5ef303c907117e4dd0d493ceebd62b900451e63eaff4b"
+        },
+        {
+          "path": "output/pdf/release-0.5.16/history-visuals/25-candidate.png",
+          "sha256": "b5618a4dec57741eddf5ef303c907117e4dd0d493ceebd62b900451e63eaff4b"
+        }
+      ],
+      "source_file_sha256": "697f37feb86cb49c905ceac0074e2569969e25043c15768cf6c0a86973fdc899"
+    }
+  ]
+}

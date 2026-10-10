@@ -48,6 +48,7 @@ PUBLIC_API: dict[str, tuple[str, ...]] = {
         "ScriptRole",
         "apply_text_evidence",
         "classify_char_script_roles",
+        "is_generated_cjk_space",
         "join_tight_text",
         "needs_tight_space",
         "prepare_table_page",

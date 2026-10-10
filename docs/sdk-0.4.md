@@ -20,6 +20,18 @@
 
 `docvortex.public_api.PUBLIC_API` 是静态模块及符号清单。新增跨库依赖必须同时更新清单、文档和契约测试；不能通过基础实现、私有模块或动态别名绕过边界。
 
+### 0.5.16 中文生成空格接口与原生协议
+
+`docvortex.analyzers.pdf.is_generated_cjk_space(left, space, right, *, origins=None) -> bool`
+用于判断相邻 `Char` 记录中的空格是否可以在自然语言物化时忽略。它只接受 PDFium
+明确标记为生成字符的空格，并检查连续源编号、中文边界、同向基线与字形间距；真实空格、
+未知证据、英文字间空格和较大字段间距均保留。函数只返回判定，不修改源字符；
+已有的 `join_tight_text` 使用同一判据。宿主应通过 `docvortex.analyzers.pdf` 导入这两个接口。
+
+`Char` 新增可选的 `is_generated: bool`，没有该字段的旧记录仍可使用。原有公开函数签名
+和 MiddleJson JSON Schema 保持兼容，私有 Python／Rust 协议由 33 升至 34；源码与扩展须配套安装。
+使用这个新接口的 MinerU 或其他宿主需要 `docvortex>=0.5.16,<1`。
+
 ### 0.5.9 公开清单补全
 
 0.5.9 将已有的显式导出补入 `PUBLIC_API`，不改变函数签名、结果协议或默认后端选择。

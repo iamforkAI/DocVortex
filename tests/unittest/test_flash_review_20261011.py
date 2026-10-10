@@ -25,7 +25,7 @@ from docvortex.analyzers.native.pdf.auxiliary_text import _classify_repeated_pag
 @lru_cache(maxsize=1)
 def _fixtures():
     """加载带原件SHA256的全文原语，避免CI依赖用户下载目录。"""
-    with gzip.open(Path(__file__).parents[1] / "fixtures/flash_review_20261011_sources.json.gz", "rt") as stream:
+    with gzip.open(Path(__file__).parents[1] / "fixtures/flash_review_20261011_sources.json.gz", "rt", encoding="utf-8") as stream:
         return {item["name"]: item for item in json.load(stream)}
 
 

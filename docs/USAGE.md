@@ -397,3 +397,9 @@ and [HTML protocol](HTML_PROTOCOL.md).
 For cross-package integrations, `docvortex.public_api.PUBLIC_API` lists supported
 modules and symbols. Read the [public SDK and 0.4 migration guide](sdk-0.4.md)
 before upgrading a host application that uses DocVortex internals or older imports.
+
+From 0.5.16, `docvortex.analyzers.pdf.is_generated_cjk_space` exposes the evidence
+check for ignoring generated spaces at Chinese text boundaries. The optional
+`Char.is_generated` field preserves character provenance; the function does not
+modify source records. Hosts using this interface require DocVortex 0.5.16 or
+later. Native protocol 34 requires matching Python source and extension versions.

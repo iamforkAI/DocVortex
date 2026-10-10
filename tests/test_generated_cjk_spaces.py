@@ -11,7 +11,8 @@ from reportlab.pdfbase.cidfonts import UnicodeCIDFont
 from reportlab.pdfgen.canvas import Canvas
 
 from docvortex.document.pdf import PDFDocument
-from docvortex.document.pdf.text.spacing import is_generated_cjk_space, join_tight_text, _local_box
+from docvortex.analyzers.pdf import is_generated_cjk_space, join_tight_text
+from docvortex.document.pdf.text.spacing import _local_box
 from docvortex.analyzers.native.pdf.inline.spacing import apply_spacing_lines, prepare_spacing_lines
 from docvortex.analyzers.native.pdf.models import _LineItem
 

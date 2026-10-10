@@ -28,7 +28,7 @@ from test_native_pdf_table import _candidate, _char_items, _local_to_page_bbox
 
 def _baige_input(table: int, mode: str) -> NativeTableInput:
     """加载带原件指纹的字符与绘图原语，覆盖两种产品实际区域。"""
-    fixture = json.loads((Path(__file__).parents[1] / "fixtures/native_pdf_table_baige.json").read_text())
+    fixture = json.loads((Path(__file__).parents[1] / "fixtures/native_pdf_table_baige.json").read_text(encoding="utf-8"))
     assert fixture["source_sha256"] == "4836be200a9af299be2852a6b0d5263f8a054f21a01aa2d64ea2c8391a36adcd"
     record = fixture["tables"][table]
     return NativeTableInput(

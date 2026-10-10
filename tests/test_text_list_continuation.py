@@ -27,7 +27,7 @@ from docvortex.schema import (
 
 def _fixture() -> list[dict]:
     """读取修改前保存的真实论文行框，避免依赖模型再次生成版面。"""
-    return json.loads((Path(__file__).parent / "fixtures/baige_text_list_continuation.json").read_text())
+    return json.loads((Path(__file__).parent / "fixtures/baige_text_list_continuation.json").read_text(encoding="utf-8"))
 
 
 def test_paper_list_tail_and_column_chain() -> None:

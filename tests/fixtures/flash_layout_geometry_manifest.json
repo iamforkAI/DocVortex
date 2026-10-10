@@ -7214,8 +7214,8 @@
         },
         {
           "page_index": 5,
-          "fingerprint": "abee9b87128e89537f59454f078156f7981d9b35405b07ce7b5039cdb1c4f1a4",
-          "bbox_fingerprint": "1b3887124eca5f098165bcde0ead0c84c99f6d68821d0640164e5f585c2aa9fe",
+          "fingerprint": "86ceac5deb0f2faa51f89937c10de11da875e146f704ac59d33c58b73c34204d",
+          "bbox_fingerprint": "38f8887d126c0429f7c14ca0c3e071067b900cc00c197062b789309e669cef4e",
           "approved": true,
           "blocks": [
             {
@@ -8701,8 +8701,8 @@
       "pages": [
         {
           "page_index": 0,
-          "fingerprint": "29c6ee99392dc49b632c3bd813817d09eeb3dbb9ef87edb513612b2c0e08a91b",
-          "bbox_fingerprint": "e03fd27a178ae2df253a985491834a688dd95e8c3c709480b7b2033045a8a2ab",
+          "fingerprint": "baf8194901c64ccb81abab9c81e63f187ed38c7775e17ff47b9d76b43bfff17c",
+          "bbox_fingerprint": "e13964c3d9b10b91cf9ba1f9850a8ba2ef8a6ffac7b793552d59fe9821828dd3",
           "approved": true,
           "blocks": [
             {
@@ -9600,8 +9600,8 @@
         },
         {
           "page_index": 8,
-          "fingerprint": "71e1cbdb4ada5c94684e49dacb15e56e138aeb8f578be2424b8c6e868c6d1d78",
-          "bbox_fingerprint": "8369e4b0f4e791e35784b7c80e99bf3a8c1a0c3da6241c32ab7a5dc1731f10e2",
+          "fingerprint": "be309250df5765ff22eeaffaf7e19796e58ad9b9c6306269d8c14195343d0961",
+          "bbox_fingerprint": "cb129570b3a501cf1af3f680bfb769d58d28a539615584226ffa0c3ddaef3e5a",
           "approved": true,
           "blocks": [
             {
@@ -9831,8 +9831,8 @@
       "pages": [
         {
           "page_index": 0,
-          "fingerprint": "8412b58c8c4fc008727a8e32ca4120ce6fcb60bdb1b59df3c2e3a7ef09402bea",
-          "bbox_fingerprint": "df2a97c3af2098d3f7d3198d4b205ccd35c45c61cb3b100e90ef079f20b6ab87",
+          "fingerprint": "1da42be2d3cebfec44ed3ea1ad9be662fb7373bd6886d5e07cb00937a3d21f5d",
+          "bbox_fingerprint": "725faec30b895396f9037c105b1e2d1d8b61f6bbc36103804c407e94e66cd991",
           "approved": true,
           "blocks": [
             {
@@ -9959,8 +9959,8 @@
         },
         {
           "page_index": 1,
-          "fingerprint": "05b1a3f807727e1755d88dc6601248f8e72c30302dd29a469d3abc5c18f4e54f",
-          "bbox_fingerprint": "6d8c72fa3617e1e4e84643bd5aa82084547a4f750bd38e9cd02a9d9b09938ff6",
+          "fingerprint": "777a952c6041e058ac210c0102473ed150c3902239cb4803dc16cc52504ad18f",
+          "bbox_fingerprint": "0ca93c4a7fa157c5b4c79ce9f0ac6463697e44a871c87851a77ba43a05f3b48e",
           "approved": true,
           "blocks": [
             {
@@ -10017,8 +10017,8 @@
         },
         {
           "page_index": 2,
-          "fingerprint": "cf2459e7e96bf155f79cd206280eddc901087b4bfb1f67ed1aa2b71d375bd5db",
-          "bbox_fingerprint": "845713ffff2b1cecfaab81910039133e5c1937c835c9408af904b5008869a9da",
+          "fingerprint": "64783aa58c8d5ddd88ad8571e630748110de8cb04266954f135ed965bd3c4f58",
+          "bbox_fingerprint": "f0032c0a93851911b1f75c1845a48ce7f1697dcb79d49bf6cbe3eedf776be48b",
           "approved": true,
           "blocks": [
             {
@@ -10110,8 +10110,8 @@
         },
         {
           "page_index": 3,
-          "fingerprint": "a77ea73e04b9a1d6b03b7bb002b82a2a46ef22d3f557cc208c397309cc5784b9",
-          "bbox_fingerprint": "f76e43d301cb1712842eddf98201383f08583d97d001f247f05de8df71e75a52",
+          "fingerprint": "9d6fa42b80414310a503efde9565103029ca83abc8b7e1a257a8a08d3b58bfd5",
+          "bbox_fingerprint": "89df37dd33b7ba5d61ed8cc4a562c9db945d05c35e748e8edbfe475057c2e123",
           "approved": true,
           "blocks": [
             {
@@ -10198,8 +10198,8 @@
         },
         {
           "page_index": 4,
-          "fingerprint": "c515944b86d94b2645e6d0403183a698b2da98c672ba7ff7ec339912880c786f",
-          "bbox_fingerprint": "0342e28f229501b3d5d78e9bb86589d012eb5398b69f32196bca46a12f30ed3d",
+          "fingerprint": "c28d59fe38b52801d5eb143b638bb623537aec59bd2ce0eefc099ffbb0a6beb2",
+          "bbox_fingerprint": "f1ac5a56568fd72c94b6148d2d5389fb1568ca1d6bb610e0b3d2d265f75afeac",
           "approved": true,
           "blocks": [
             {
@@ -10251,8 +10251,8 @@
         },
         {
           "page_index": 5,
-          "fingerprint": "7986ebc989b837e5bb0417a2fc746ca2410ee7fec80e4562fb89c6bccccf4717",
-          "bbox_fingerprint": "c738f475a43c88b78286eba8da3bed2dbbd82a8d8932c7fc10b1dca562d09414",
+          "fingerprint": "107923aefcc841782768085c845f339ebcd7df587fa828315f0cf3b8fe3c1b11",
+          "bbox_fingerprint": "4f045f4e6a16502a8864f9fd57820bcaa3047fb2f89277716162639450a7ae36",
           "approved": true,
           "blocks": [
             {
@@ -10314,8 +10314,8 @@
         },
         {
           "page_index": 6,
-          "fingerprint": "e5625fbff8dda5468116443423657ca22b91691a8798e231ecadd0d28cf22771",
-          "bbox_fingerprint": "97e36c6f5cc149c61163384bfbe7ed89216af97ad2fe5c08247b12644786fd35",
+          "fingerprint": "e94dc2d6da2fe518423b588837788111a4a3441d541391bb40943e3e2fc845b8",
+          "bbox_fingerprint": "db0e8cd1108b2116c2489626e0a7e2a535257a5f42342bbe66d5751312cbbfbf",
           "approved": true,
           "blocks": [
             {
@@ -10417,8 +10417,8 @@
         },
         {
           "page_index": 7,
-          "fingerprint": "73af3d8ee5d4bb198a36bb25a7eb7ba0efcbc0d0cc8529aa4593d2f093307f14",
-          "bbox_fingerprint": "007a1657030f2c6f4d0ea69cd1af059867723b969a771cfd2ef25d05353761dd",
+          "fingerprint": "bcbadda280a0f48ddb11d836c2ca6f2e9b52d576f3b93d216022f922597f1b1d",
+          "bbox_fingerprint": "b8aea15f659e79cd05c6d08909e4bf31c28ef718b6954627aba6f8ad8b0c1cff",
           "approved": true,
           "blocks": [
             {
@@ -10530,8 +10530,8 @@
         },
         {
           "page_index": 8,
-          "fingerprint": "b55f448ed902a3b800266e168cc988877233442a2d255a3c0c8ccdb5eaff8615",
-          "bbox_fingerprint": "9089c1d08cbef7319770cbfecab9530156fd490eb723adac7ae1d75fccb4b2ad",
+          "fingerprint": "f2c94efa6bb8cfd7cc2d5a4656bab7f343e64ce0032bd58a2e2511b13278c32a",
+          "bbox_fingerprint": "76d0088b3516bfeb8a4e874c80dcf65e31bf9c3bf21a410e71bd2adcdae8c963",
           "approved": true,
           "blocks": [
             {
@@ -10648,8 +10648,8 @@
         },
         {
           "page_index": 9,
-          "fingerprint": "e042ae6457bf5d66a3822d7ee5054ac604009fef57fe7dad3a0aebf9de636300",
-          "bbox_fingerprint": "21a2f6e5fd48a621555907c50a86ecadf0dc29ab13d5122d0872ec9f335b149b",
+          "fingerprint": "b2846d3f344878ed34c6cc39197553c83bf9856d940e5bd67a057de079927f40",
+          "bbox_fingerprint": "d5117d8bdfd24b84e29c6439290b2fbf269c3f7d6abaf3b395ef5d0f4158838d",
           "approved": true,
           "blocks": [
             {
@@ -10746,8 +10746,8 @@
         },
         {
           "page_index": 10,
-          "fingerprint": "2148e2392183c2d0d7b914fa556f742b77e56658450dcbfd97cd7569119f6188",
-          "bbox_fingerprint": "23832b0602615362c1aaefdf4802b2566111870d961439d225202929629b8c55",
+          "fingerprint": "1a9bdbb10662d0a9885e939c5ab542abd0a7a487a6ab3bd09b015a7d487f4c00",
+          "bbox_fingerprint": "2fa8a7f3dcda663721783ce6dee77271918afec59a989cd0cf52ef9d91c8b65a",
           "approved": true,
           "blocks": [
             {
@@ -10844,8 +10844,8 @@
         },
         {
           "page_index": 11,
-          "fingerprint": "879d679c0b0cb326883ce21c14651c48e89d6d57644300d02eb4ef08f68672a3",
-          "bbox_fingerprint": "1a40a196e15e4aa5ffbddba43b9eae1d775d883463fec0dec783ee927ba6b531",
+          "fingerprint": "bb986584a656623e8c713126ab17bc893080c6b1de34794f3fc9ebdc5876efb4",
+          "bbox_fingerprint": "2584f134794ce31da3573a127cc881627e335c580bd4f7fb8ae4aa8fc1c198b8",
           "approved": true,
           "blocks": [
             {
@@ -10977,8 +10977,8 @@
         },
         {
           "page_index": 12,
-          "fingerprint": "7762d0cded1992b9a620108bfa4b96c0c277e2284d7cc68cbdc168c714a3689e",
-          "bbox_fingerprint": "89f58d9bb6681bef8c04f4d67042877096a1742e782871d295f41eee8c5f3bd3",
+          "fingerprint": "0775fadea449edd417ffef9491b0b46ae52f26ae7ff1fe78980e5c242fc94017",
+          "bbox_fingerprint": "ff862a441b1bdfa5cce0111fbbedc3d61c82691513775974ddde9f65e02db899",
           "approved": true,
           "blocks": [
             {
@@ -11065,8 +11065,8 @@
         },
         {
           "page_index": 13,
-          "fingerprint": "7a9bcba4f94aecc86bedb0441fcce0c6114d63923dd591bc84880552450873c2",
-          "bbox_fingerprint": "4504bf26154dbe3b4a158740491e0386cfba7913fb0427d27726499e89f98e84",
+          "fingerprint": "ea53b4ccc6fff25e997862e1408bce78e4fb56ab6d539a0da80a299803ef4a85",
+          "bbox_fingerprint": "b2b2480ddede7e108e7dae67e3f370eb9c475fe67408fb734c8417d074c2e84a",
           "approved": true,
           "blocks": [
             {
@@ -11128,8 +11128,8 @@
         },
         {
           "page_index": 14,
-          "fingerprint": "d0f57c0291afd643d4622b1af0c2ab70da43a4289d1fe4dca1d2bb9d57af97a7",
-          "bbox_fingerprint": "8e6a9310d85cdb9c67222368f06ce5df33f9f7bec987bb706793cabc0b354c95",
+          "fingerprint": "51b083ef3747c67540cb48278914397b031ab4df893602bf7cc9e4c52a18d8a4",
+          "bbox_fingerprint": "fdfb5be17fd46bef134b9998315c9e234bf1066c5cd0dfeaf3683708cc96afe1",
           "approved": true,
           "blocks": [
             {
@@ -11221,8 +11221,8 @@
         },
         {
           "page_index": 15,
-          "fingerprint": "7128c1729eecf20a97e26d7e196217991d87914f70d625bd53df35141728e851",
-          "bbox_fingerprint": "20d0f2a060ae8076fcbf70adc275dc611db944f29a2bb0073d78501de4a72784",
+          "fingerprint": "d0ce0fa01bfd107aea9c3cde30d9b8ae4c81c494af5c9fc4d8e852d1410e14b4",
+          "bbox_fingerprint": "ecdbd10aadc0492a19c5a294094aee70ca0123318456a4a425dd0918a735b870",
           "approved": true,
           "blocks": [
             {
@@ -15148,8 +15148,8 @@
       "pages": [
         {
           "page_index": 0,
-          "fingerprint": "691868af009d91fbdc4d43127d66717d83f64405f551a4c7896ba7d704926558",
-          "bbox_fingerprint": "31bdbbc64e58ffec31bfefc9ad228d9c0738d05fffcb505f127c0e83c8174b1f",
+          "fingerprint": "87c9633a175605fb183a8f5429a24d5e6177f8b4942e6876f910c572ca933159",
+          "bbox_fingerprint": "71aba18389ad9882470e4864dc51b14899db95bbd4aaf9c9542c0dd72808f29b",
           "approved": true,
           "blocks": [
             {
@@ -15650,8 +15650,8 @@
       "pages": [
         {
           "page_index": 0,
-          "fingerprint": "a67cf4d6ec9d6616f4159f1c9654a8a62cebe0614b000b9749665cb0db6a795c",
-          "bbox_fingerprint": "90927e4c06fbe01d49a77da602fd1dc4e2171d46500df47db346d356d1a6a47b",
+          "fingerprint": "4fa9566a49d5915ad53100d777b0c3aecd537d6a71c60e7477c135f9082e1768",
+          "bbox_fingerprint": "a6ea6eebee6ca16d16f762fc3eb90b9818d22a14429f1e947f919e293224d79a",
           "approved": true,
           "blocks": [
             {
@@ -15743,8 +15743,8 @@
         },
         {
           "page_index": 1,
-          "fingerprint": "01bc5f14e82c4abb578d94285b31cc4d48d1ca5cdacfe2746f54e00c4fb1229f",
-          "bbox_fingerprint": "18d1250de471e019d2477d668c189941180c5710d5eb40caa5e77994e98acc5c",
+          "fingerprint": "842e2044504acdb8f2fefdc7079e69363d3d4bc372e669abae5397cd534881dd",
+          "bbox_fingerprint": "a2a49308454dc0f616879b6b7d67fc50d8a28952c5f048fd77a4594454bfe7f8",
           "approved": true,
           "blocks": [
             {
@@ -15851,8 +15851,8 @@
         },
         {
           "page_index": 2,
-          "fingerprint": "ceb9ca3a2a1222c2d22552dcd3a508e24e79a23b9f8c284b96a8b95c2096bc28",
-          "bbox_fingerprint": "07d8844daeade72f19a06fd5a029905ae5fc87fa9702c58af3fb25040f389ec5",
+          "fingerprint": "97e967ef49c07f0cd790274a4abadc42d239253e7e5f6bcc3d3b84916720d768",
+          "bbox_fingerprint": "3dc9276953b1b05cbe11f618d95eb39f39297926677a2cf03e12241d773fc6e5",
           "approved": true,
           "blocks": [
             {
@@ -15979,8 +15979,8 @@
         },
         {
           "page_index": 3,
-          "fingerprint": "7591b916ab2d6c0bc3bec2b9545d0ea5a8da4bdda70c3099514a85dd5b8db4e1",
-          "bbox_fingerprint": "b7b259ec922cb09d482b1582cbfc6db5f54e5ba4bc0408807b78d5cda4f3054f",
+          "fingerprint": "c5c15e0e6b59ae76d705c69d92431901938e2793bfa84b81ca12eeab16182e76",
+          "bbox_fingerprint": "ba1ca6fa2fa113c6818155b1374544473ffdd603d0920e65e0967b6e883d84a1",
           "approved": true,
           "blocks": [
             {
@@ -16077,8 +16077,8 @@
         },
         {
           "page_index": 4,
-          "fingerprint": "0c61c6b4193888c26754fdfad68c3276f12859b3ee22a9ca46d3d64d137a9a70",
-          "bbox_fingerprint": "c554ad46319ad7e59e2ee4d5d5807cf3df1d47fed75ccae7f016cb5a22c34fa1",
+          "fingerprint": "6e9c55bc9e187232b6487d3ba7d21659410a233bf648e48dcf0e8afabbcecfcc",
+          "bbox_fingerprint": "0b3b5f3571d7a257e625301365b402e420d08d6d524a135332df16e69ccd5e6c",
           "approved": true,
           "blocks": [
             {
@@ -16202,5 +16202,6 @@
         "sibling_x_runs": 1
       }
     }
-  ]
+  ],
+  "release_review_record": "tests/fixtures/flash_release_0_5_16_decisions.json"
 }

@@ -19,6 +19,7 @@ from docvortex.analyzers.pdf import (
     PDFTextScriptLine,
     PDFTextScriptRange,
     apply_text_evidence,
+    is_generated_cjk_space,
     prepare_table_page,
     prepare_text_evidence,
     recover_table_region,
@@ -64,6 +65,7 @@ def test_public_api_facades_preserve_shared_types_and_entrypoints() -> None:
 def test_new_api_annotations_resolve() -> None:
     """公共类型和函数不依赖调用方预加载旧模块才能解析注解。"""
     for value in (
+        is_generated_cjk_space,
         PDFTablePage,
         PDFTableResult,
         PDFTextEvidence,
