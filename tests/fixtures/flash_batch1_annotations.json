@@ -1,0 +1,45 @@
+{
+  "scope": "Flash 2026-10-11 第一批：原生方向与标框，不改变分段、类型、表格或阅读顺序规则",
+  "documents": [
+    {
+      "path": "tests/unittest/pdfs/flash_layout/negative_font_scale_report.pdf",
+      "sha256": "3b9a72ce8ac7fd0a6a39cf5dbbc8bc4b69532470cb0b83283b4d11aed09e46c5",
+      "page_count": 31,
+      "source_name": "8.毛伟明董事长在国家电网公司2020年年中工作会议上的报告_origin.pdf",
+      "expectation": "全原件公开 txt 解析，逐页字符覆盖至少 90%，第二页正文与加粗标题锚点恢复",
+      "known_residual": "方向证据去重不删除描粗字符成员；重复文字和混合粗行留待后续批次"
+    },
+    {
+      "path": "tests/unittest/pdfs/flash_layout/outside_crop_ship_design.pdf",
+      "sha256": "a086bf1a5cbad91654cd3c79d71ea70f9f77c9e39cde8a1089eb1e2ebded29bf",
+      "page_count": 265,
+      "source_name": "Ship Design and Performance for Masters and Mates.pdf",
+      "expectation": "保留所有物理页，标框按 CropBox 与 MediaBox 交集定位",
+      "known_residual": "第 124 页 pypdf 重写的既有字体渲染差异不属于本批修复"
+    },
+    {
+      "path": "tests/unittest/pdfs/flash_layout/signature_widget_appearance.pdf",
+      "sha256": "f470a5b5c7eda318f5d58aa6d8e5e1476b03f09a63967441819445816bc9e300",
+      "page_count": 2,
+      "source_name": "issue.pdf",
+      "expectation": "保存 AcroForm 与 Sig Widget 可见外观，两页无标框重写的像素与原件一致",
+      "known_residual": "派生 PDF 不保证原数字签名继续有效"
+    },
+    {
+      "path": "tests/unittest/pdfs/flash_layout/unreadable_info_metadata.pdf",
+      "sha256": "022b681f6fed9cbcd46f9d263502b8ba85d27dea25be4332d522572731d1f6ba",
+      "page_count": 5,
+      "source_name": "12352684 (1)-需要重打印.pdf",
+      "expectation": "不可读 /Info 仅从派生内存副本移除并发出警告；完整 Catalog 与五页像素保留",
+      "known_residual": "原件无修改，不尝试重建已损坏的元数据"
+    },
+    {
+      "path": "tests/unittest/pdfs/flash_layout/deep_structure_catalog.pdf",
+      "sha256": "6e0eccd9bbcbf0a91715a212477e133151e13bdeacf6f15df70461d9211a2042",
+      "page_count": 328,
+      "source_name": "en-ebook-pdfdrive_pdfs_29258806.pdf",
+      "expectation": "递归克隆超限时仅回退官方完整对象加载；保留结构树、表单、图层目录和全部328物理页，不改全局递归上限",
+      "known_residual": "此兼容只处理RecursionError，其他PDF读取或对象数量限制错误仍明确失败"
+    }
+  ]
+}

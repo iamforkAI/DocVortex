@@ -306,6 +306,79 @@ def test_native_line_builder_can_opt_in_to_180_degree_visual_runs() -> None:
     assert [(item.text, item.angle) for item in low_txt_items] == [("upside down", 180)]
 
 
+@pytest.mark.parametrize("page_rotation", [0, 90, 180, 270])
+@pytest.mark.parametrize("text", ["AB", "正向正文", "ab12CD"])
+def test_negative_font_scale_recovers_source_advance_before_direction_filter(page_rotation: int, text: str) -> None:
+    """负字号配合正向字符基线先纠正伪半周角度，再应用页面方向白名单。"""
+    axis = {0: (1, 0), 90: (0, 1), 180: (-1, 0), 270: (0, -1)}[page_rotation]
+    chars = []
+    for index, value in enumerate(text):
+        x, y = 50 + index * 8 * axis[0], 50 + index * 8 * axis[1]
+        char = _char(value, (x, y, x + 6, y + 6))
+        char["font"] = {"name": "arbitrary", "size": -10}
+        chars.append(char)
+    span = _span(text, (10, 10, 90, 90), 180, chars=chars)
+    span["font"] = chars[0]["font"]
+    line = _line([span], 180)
+    angle = native_text._resolve_pdftext_line_angle(line, page_rotation=page_rotation)
+    assert angle == (None if page_rotation == 180 else page_rotation)
+    assert native_text._resolve_pdftext_line_angle(
+        line, page_rotation=page_rotation, supported_angles=(0, 90, 180, 270)
+    ) == page_rotation
+
+
+@pytest.mark.parametrize("size", [10, -10, float("nan")])
+@pytest.mark.parametrize("reverse", [False, True])
+def test_negative_scale_does_not_reinterpret_true_inverted_or_unsupported_baselines(size: float, reverse: bool) -> None:
+    """正字号、无效字号及实际向左前进的倒置行均保持既有方向拒绝行为。"""
+    chars = []
+    for index, value in enumerate("ABCD"):
+        x = 70 - index * 8 if reverse else 20 + index * 8
+        char = _char(value, (x, 30, x + 6, 38))
+        char["font"] = {"size": size}
+        chars.append(char)
+    span = _span("ABCD", (20, 30, 76, 38), 180, chars=chars)
+    span["font"] = chars[0]["font"]
+    expected = 0 if size == -10 and not reverse else None
+    assert native_text._resolve_pdftext_line_angle(_line([span], 180), page_rotation=0) == expected
+
+
+@pytest.mark.parametrize("boxes", [[(20, 30, 26, 38)], [(20, 30, 26, 38), (28, 38, 34, 46)]])
+def test_negative_scale_requires_multiple_chars_on_a_stable_baseline(boxes: list) -> None:
+    """单字和真正斜向的字符序列缺乏可靠证据，不能恢复为正向正文。"""
+    chars = [{**_char("A", box), "font": {"size": -10}} for box in boxes]
+    span = _span("A" * len(chars), (20, 30, 34, 46), 180, chars=chars)
+    assert native_text._resolve_pdftext_line_angle(_line([span], 180), page_rotation=0) is None
+
+
+@pytest.mark.parametrize("overlap", [True, False])
+def test_negative_scale_ignores_only_same_position_overpaint_evidence(overlap: bool) -> None:
+    """同位描粗不造成方向误拒绝，异位同字回退仍拒绝且原字符成员不变。"""
+    chars = [
+        {**_char(value, (20 + index * 8, 30, 26 + index * 8, 38)), "font": {"size": -10}}
+        for index, value in enumerate("ABCD")
+    ]
+    chars.append({**_char("A", (20, 30.2, 26, 38.2) if overlap else (10, 30, 16, 38)), "font": {"size": -10}})
+    chars.append({**_char("E", (52, 30, 58, 38)), "font": {"size": -10}})
+    span = _span("ABCDAE", (10, 30, 58, 38.2), 180, chars=chars)
+    line = _line([span], 180)
+    assert native_text._resolve_pdftext_line_angle(line, page_rotation=0) == (0 if overlap else None)
+    assert span["chars"] == chars and len(chars) == 6
+
+
+@pytest.mark.parametrize("changed_font", [{"size": -12}, {"size": -10, "name": "other"}])
+def test_negative_scale_does_not_merge_evidence_from_different_fonts(changed_font: dict) -> None:
+    """不同字号或字体的同位同字不能充当可删除的描粗副层方向证据。"""
+    chars = [
+        {**_char(value, (20 + index * 8, 30, 26 + index * 8, 38)), "font": {"size": -10}}
+        for index, value in enumerate("ABCD")
+    ]
+    chars.append({**_char("A", (20, 30.2, 26, 38.2)), "font": changed_font})
+    chars.append({**_char("E", (52, 30, 58, 38)), "font": {"size": -10}})
+    line = _line([_span("ABCDAE", (20, 30, 58, 38.2), 180, chars=chars)], 180)
+    assert native_text._resolve_pdftext_line_angle(line, page_rotation=0) is None
+
+
 @pytest.mark.parametrize(
     "separator",
     [

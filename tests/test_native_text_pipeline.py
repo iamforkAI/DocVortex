@@ -139,6 +139,31 @@ def test_fused_visual_lines(rotation):
     assert all(id(char) in originals for item in actual for char in item.chars)
 
 
+@pytest.mark.parametrize("rotation", [0, 90, 180, 270])
+@pytest.mark.parametrize("size", [-10, 10])
+@pytest.mark.parametrize("reverse", [False, True])
+@pytest.mark.parametrize("text", ["Ab", "Ab12Cd"])
+def test_negative_font_scale_visual_lines_match_python_without_reversing_text(rotation, size, reverse, text):
+    """半周字体元数据的方向恢复在连续 Rust 与 Python 路径一致，且保持原字符顺序。"""
+    native = pytest.importorskip("docvortex._native")
+    from docvortex.analyzers.native.pdf.native_text import _build_native_line_items, _build_native_line_items_from_chars
+
+    axis = {0: (1, 0), 90: (0, 1), 180: (-1, 0), 270: (0, -1)}[rotation]
+    sign = -1 if reverse else 1
+    chars = []
+    for index, value in enumerate(text):
+        x, y = 100 + sign * index * 8 * axis[0], 100 + sign * index * 8 * axis[1]
+        chars.append(_char(value, (x, y, x + 6, y + 6), index, {"name": "other", "size": size}, math.pi))
+    records = native.prepare_visual_lines(chars, (300, 300), rotation, (0, 90, 270))
+    assert records is not None, "必须实际执行连续 Rust 路径"
+    expected = _build_native_line_items(_get_lines_from_chars_python(chars), (300, 300), page_rotation=rotation)
+    actual = _build_native_line_items_from_chars(chars, (300, 300), page_rotation=rotation)
+    assert _line_records(actual) == _line_records(expected)
+    if size < 0 and not reverse:
+        assert [item.angle for item in actual] == ([] if rotation == 180 else [rotation])
+        assert "".join(item.text for item in actual) == ("" if rotation == 180 else text)
+
+
 def test_fused_seeded_differential():
     """覆盖多字体、字符方向与分隔几何的完整视觉行差分。"""
     pytest.importorskip("docvortex._native")

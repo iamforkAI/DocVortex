@@ -4,9 +4,11 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
 from io import BytesIO
+import warnings
 
 from pypdf import PageObject, PdfReader, PdfWriter
-from pypdf.generic import RectangleObject
+from pypdf.errors import PdfReadError
+from pypdf.generic import IndirectObject, NameObject, NullObject, RectangleObject
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfgen import canvas
 
@@ -54,7 +56,7 @@ def render_layout_pdf(
 ) -> bytes:
     """把当前 PageInfo 布局画到 PDF，返回新字节且不修改解析结果。
 
-    bbox 使用页面显示方向下、以 CropBox 左上角为原点的归一化坐标。
+    bbox 使用页面显示方向下、以 CropBox 与 MediaBox 有效交集左上角为原点的归一化坐标。
     page_indices 的第 i 项是输入 PDF 第 i 页对应的原始 page_idx；
     完整原文可省略映射，抽页或重排后的 PDF 必须显式提供映射。
     没有对应解析结果的页面原样保留，映射长度错误时抛出 ValueError。
@@ -73,13 +75,30 @@ def render_layout_pdf(
     if any(isinstance(index, bool) or not isinstance(index, int) or index < 0 for index in indices):
         raise ValueError("page_indices must contain non-negative integers")
 
-    writer = PdfWriter()
-    for source_page, original_index in zip(reader.pages, indices):
-        # 直接复制原页可保留 MediaBox、CropBox、Rotate 和原有批注。
-        page_copy = writer.add_page(source_page)
+    # 损坏的文档信息不参与可见页渲染；只省略不可读的 /Info，不回退为丢失表单的逐页复制。
+    if "/Info" in reader.trailer:
+        info_reference = reader.trailer.raw_get("/Info")
+        try:
+            reader.metadata
+        except PdfReadError:
+            # 完整对象加载也会遍历未被目录引用的 xref；缓存仅此已确认损坏的元数据，避免再次读取。
+            if isinstance(info_reference, IndirectObject):
+                reader.cache_indirect_object(info_reference.generation, info_reference.idnum, NullObject())
+            del reader.trailer[NameObject("/Info")]
+            warnings.warn("Omitting unreadable PDF /Info metadata from layout copy", RuntimeWarning, stacklevel=2)
+    # 页树之外的 AcroForm 也参与 Widget 外观渲染，必须一并复制文档目录。
+    try:
+        writer = PdfWriter(clone_from=reader)
+    except RecursionError:
+        # 带深结构树的文档先循环加载全部对象，避免递归克隆，不改全局递归上限或丢弃目录。
+        warnings.warn(
+            "Loading all PDF objects after recursive layout clone exceeded its limit", RuntimeWarning, stacklevel=2
+        )
+        writer = PdfWriter(reader, full=True)
+    for page_copy, original_index in zip(writer.pages, indices):
         middle_page = pages_by_index.get(original_index)
         if middle_page is not None:
-            overlay = _build_page_overlay(source_page, middle_page)
+            overlay = _build_page_overlay(page_copy, middle_page)
             if overlay is not None:
                 page_copy.merge_page(overlay)
 
@@ -88,9 +107,22 @@ def render_layout_pdf(
     return output.getvalue()
 
 
+def _effective_page_box(page: PageObject) -> RectangleObject:
+    """与 PDFium 显示页框一致取裁剪框和媒体框交集，不改写原框或重复缩放 UserUnit。"""
+    return RectangleObject(
+        (
+            max(page.cropbox.left, page.mediabox.left),
+            max(page.cropbox.bottom, page.mediabox.bottom),
+            min(page.cropbox.right, page.mediabox.right),
+            min(page.cropbox.top, page.mediabox.top),
+        )
+    )
+
+
 def _build_page_overlay(page: PageObject, middle_page: PageInfo) -> PageObject | None:
     """先绘制边框，再按显示方向放置标签，保留原页方向和页面框。"""
-    if page.cropbox.width <= 0 or page.cropbox.height <= 0:
+    visible_box = _effective_page_box(page)
+    if visible_box.width <= 0 or visible_box.height <= 0:
         return None
     boxes = list(_iter_overlay_boxes(middle_page.blocks))
     if not boxes:
@@ -109,7 +141,7 @@ def _build_page_overlay(page: PageObject, middle_page: PageInfo) -> PageObject |
     overlay = PdfReader(packet).pages[0]
     # merge_page 按 overlay 的 CropBox 裁剪，必须同步原页偏移，支持负坐标。
     overlay.mediabox = RectangleObject(page.mediabox)
-    overlay.cropbox = RectangleObject(page.cropbox)
+    overlay.cropbox = visible_box
     return overlay
 
 
@@ -130,8 +162,9 @@ def _iter_overlay_boxes(blocks: Iterable[BlockBase]) -> Iterable[tuple[str, BBox
 
 def _draw_overlay_labels(painter: canvas.Canvas, page: PageObject, boxes: Sequence[tuple[str, BBox, int | None]]) -> None:
     """在显示方向的左下原点坐标系中绘制正向标签，并用白底保护文字可读性。"""
-    left, bottom = float(page.cropbox.left), float(page.cropbox.bottom)
-    width, height = float(page.cropbox.width), float(page.cropbox.height)
+    visible_box = _effective_page_box(page)
+    left, bottom = float(visible_box.left), float(visible_box.bottom)
+    width, height = float(visible_box.width), float(visible_box.height)
     rotation = page.rotation % 360
     transforms = {
         0: (1, 0, 0, 1, left, bottom),
@@ -178,9 +211,10 @@ def _place_label(
 
 
 def _normalized_bbox_to_pdf(bbox: BBox, page: PageObject) -> BBox:
-    """反转显示方向的直角旋转，并把 CropBox 内的归一化框还原为 PDF 坐标。"""
-    left, bottom = float(page.cropbox.left), float(page.cropbox.bottom)
-    width, height = float(page.cropbox.width), float(page.cropbox.height)
+    """反转显示方向的直角旋转，并把有效可见页框内的归一化框还原为 PDF 坐标。"""
+    visible_box = _effective_page_box(page)
+    left, bottom = float(visible_box.left), float(visible_box.bottom)
+    width, height = float(visible_box.width), float(visible_box.height)
     x0, y0, x1, y1 = bbox
     rotation = page.rotation % 360
     if rotation == 90:

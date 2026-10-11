@@ -11,7 +11,7 @@ import pypdfium2 as pdfium
 import pytest
 from pypdf import PdfReader, PdfWriter
 from pypdf.annotations import Link
-from pypdf.generic import RectangleObject
+from pypdf.generic import FloatObject, NameObject, RectangleObject
 from reportlab.pdfgen import canvas
 
 from docvortex.document.pdf._document import PDFDocument
@@ -103,6 +103,7 @@ def _label_backgrounds(data: bytes) -> list[tuple[float, ...]]:
 def _render_pixels(data: bytes) -> np.ndarray:
     """实际渲染第一页并复制 RGB 像素，确保关闭 PDFium 资源后仍可比较。"""
     with pdfium.PdfDocument(data) as document:
+        document.init_forms()
         page = document[0]
         bitmap = page.render(scale=2)
         try:
@@ -355,3 +356,126 @@ def test_pdf_document_wrapper_matches_public_renderer(tmp_path: Path) -> None:
     assert _outlines(actual) == _outlines(expected)
     assert PdfReader(BytesIO(actual)).pages[0].extract_text() == PdfReader(BytesIO(expected)).pages[0].extract_text()
     assert PdfReader(BytesIO(actual)).pages[0].rotation == 90
+
+
+@pytest.mark.parametrize("rotation", [0, 90, 180, 270])
+@pytest.mark.parametrize("unit", [1, 2, 3])
+@pytest.mark.parametrize(
+    ("media", "crop"),
+    [
+        ((30, 40, 230, 340), (-10, 0, 270, 390)),
+        ((-80, -120, 120, 180), (-100, -150, 200, 250)),
+        ((0, 0, 200, 300), (-20, -30, 200, 300)),
+        ((30, 40, 230, 340), (-10, 100, 170, 390)),
+    ],
+)
+def test_outside_crop_uses_effective_visible_box(rotation: int, unit: int, media: tuple, crop: tuple) -> None:
+    """异常 CropBox 按有效交集标框，保留四向旋转及原 UserUnit，不能二次缩放。"""
+    writer = PdfWriter(clone_from=PdfReader(BytesIO(_source_pdf(rotation=rotation, media=media, crop=crop))))
+    writer.pages[0][NameObject("/UserUnit")] = FloatObject(unit)
+    stream = BytesIO()
+    writer.write(stream)
+    source = stream.getvalue()
+    output = render_layout_pdf(source, [_page()])
+    page = PdfReader(BytesIO(output)).pages[0]
+    assert tuple(page.mediabox) == media
+    assert tuple(page.cropbox) == crop
+    assert page["/UserUnit"] == unit
+    pixels = _render_pixels(output)
+    red, green, blue = pixels[:, :, 0], pixels[:, :, 1], pixels[:, :, 2]
+    mask = (red > 100) & (red < 220) & (green < 70) & (blue > 40) & (blue < 160)
+    height, width = mask.shape
+    mask[: round(height * 0.2) - 2] = False
+    y, x = np.where(mask)
+    assert x.size > 0
+    assert (x.min(), y.min(), x.max(), y.max()) == pytest.approx(
+        (width * 0.1, height * 0.2, width * 0.6, height * 0.4), abs=2
+    )
+
+
+@pytest.mark.parametrize("marked", [False, True])
+@pytest.mark.parametrize("load_full", [False, True])
+def test_acroform_appearance_and_catalog_survive_layout_copy(marked: bool, load_full: bool, monkeypatch) -> None:
+    """复制表单目录及 Widget 外观，空布局像素相等，有框布局也不丢勾选图形。"""
+    if load_full:
+        import docvortex.visualization as visualization
+
+        def force_full_loading(*args, **kwargs):
+            """模拟递归克隆失败，只让官方完整加载分支接收真实表单文档。"""
+            if "clone_from" in kwargs:
+                raise RecursionError("deep structure")
+            return PdfWriter(*args, **kwargs)
+
+        monkeypatch.setattr(visualization, "PdfWriter", force_full_loading)
+    stream = BytesIO()
+    painter = canvas.Canvas(stream, pagesize=(300, 400))
+    painter.drawString(50, 100, "Original form")
+    painter.acroForm.checkbox(name="confirmed", x=230, y=180, size=24, checked=True)
+    painter.showPage()
+    painter.save()
+    source = stream.getvalue()
+    if load_full:
+        with pytest.warns(RuntimeWarning, match="recursive layout clone"):
+            output = render_layout_pdf(source, [_page(blocks=[_text_block()] if marked else [])])
+    else:
+        output = render_layout_pdf(source, [_page(blocks=[_text_block()] if marked else [])])
+    original = PdfReader(BytesIO(source))
+    copied = PdfReader(BytesIO(output))
+    assert copied.get_fields().keys() == original.get_fields().keys()
+    original_widget = original.pages[0]["/Annots"][0].get_object()
+    copied_widget = copied.pages[0]["/Annots"][0].get_object()
+    assert copied_widget["/V"] == original_widget["/V"] == "/Yes"
+    assert copied_widget["/AP"]["/N"]["/Yes"].get_data() == original_widget["/AP"]["/N"]["/Yes"].get_data()
+    before, after = _render_pixels(source), _render_pixels(output)
+    assert np.any(before[380:450, 450:525] < 200), "必须实际渲染 Widget，不能比较两张空白区域"
+    if marked:
+        assert np.array_equal(before[380:450, 450:525], after[380:450, 450:525])
+    else:
+        assert np.array_equal(before, after)
+
+
+@pytest.mark.parametrize("crop", [(400, 500, 600, 700), (20, 30, 20, 300), (180, 250, 20, 30)])
+def test_invalid_visible_box_preserves_page_without_drawing(crop: tuple) -> None:
+    """无交集、零宽或反向裁剪框不画伪布局框，也不改写原页面内容和页框。"""
+    source = _source_pdf(crop=crop)
+    output = render_layout_pdf(source, [_page()])
+    original, copied = PdfReader(BytesIO(source)), PdfReader(BytesIO(output))
+    assert len(copied.pages) == len(original.pages) == 1
+    assert tuple(copied.pages[0].cropbox) == crop
+    assert copied.pages[0].get_contents().get_data() == original.pages[0].get_contents().get_data()
+    assert not _outlines(output)
+
+
+def test_unreadable_info_does_not_drop_acroform_or_page_content():
+    """不可读的尾部元数据仅被省略，完整 Catalog、表单字段及可见勾选外观仍保留。"""
+    stream = BytesIO()
+    painter = canvas.Canvas(stream, pagesize=(300, 400))
+    painter.drawString(50, 100, "Metadata compatibility")
+    painter.acroForm.checkbox(name="confirmed", x=230, y=180, size=24, checked=True)
+    painter.showPage()
+    painter.save()
+    source = stream.getvalue()
+    info = PdfReader(BytesIO(source)).trailer.raw_get("/Info")
+    header = f"{info.idnum} {info.generation} obj".encode("ascii")
+    position = source.index(b"<<", source.index(header) + len(header))
+    broken = source[:position] + b"oo" + source[position + 2 :]
+    with pytest.warns(RuntimeWarning, match="unreadable PDF /Info"):
+        output = render_layout_pdf(broken, [])
+    copied = PdfReader(BytesIO(output))
+    assert "/Info" not in copied.trailer
+    assert copied.get_fields()["confirmed"]["/V"] == "/Yes"
+    assert np.array_equal(_render_pixels(broken), _render_pixels(output))
+
+
+def test_non_recursive_clone_errors_are_not_silently_retried(monkeypatch):
+    """只有递归限制触发完整加载，其他读写错误继续明确失败而不扩大兼容兜底。"""
+    import docvortex.visualization as visualization
+    from pypdf.errors import PdfReadError
+
+    def fail_clone(*args, **kwargs):
+        """注入非递归错误，确认异常不会被当成深结构树处理。"""
+        raise PdfReadError("invalid catalog")
+
+    monkeypatch.setattr(visualization, "PdfWriter", fail_clone)
+    with pytest.raises(PdfReadError, match="invalid catalog"):
+        render_layout_pdf(_source_pdf(), [])

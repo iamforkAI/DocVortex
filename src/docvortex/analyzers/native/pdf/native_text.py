@@ -342,6 +342,7 @@ def _resolve_pdftext_line_angle(
     """解析视觉文字方向，并用字符基线纠正字体 shear 造成的伪斜向行。"""
 
     visual_angle = (_pdftext_angle_degrees(pdf_line.get("rotation")) + int(page_rotation or 0)) % 360.0
+    visual_angle = _correct_negative_scale_angle(pdf_line, visual_angle)
     for supported_angle in supported_angles:
         if _circular_angle_distance(visual_angle, supported_angle) <= _PDFTEXT_LINE_ANGLE_TOLERANCE_DEGREES:
             return int(supported_angle)
@@ -358,6 +359,65 @@ def _resolve_pdftext_line_angle(
     return None
 
 
+def _correct_negative_scale_angle(pdf_line: dict[str, Any], visual_angle: float) -> float:
+    """负字号和同源字母数字基线共同证实半周翻转才纠正，单字及描粗副层不作新证据。"""
+    candidate = (visual_angle + 180.0) % 360.0
+    cardinal = min((0, 90, 180, 270), key=lambda angle: _circular_angle_distance(candidate, angle))
+    if _circular_angle_distance(candidate, cardinal) > _PDFTEXT_LINE_ANGLE_TOLERANCE_DEGREES:
+        return visual_angle
+    axis_x, axis_y = {0: (1, 0), 90: (0, 1), 180: (-1, 0), 270: (0, -1)}[cardinal]
+    positions: list[tuple[float, float]] = []
+    heights: list[float] = []
+    seen: dict[tuple[str, str, int, float], list[BBox]] = {}
+    for span in pdf_line.get("spans") or []:
+        for char in span.get("chars") or []:
+            text = str(char.get("char") or "")
+            bbox = _coerce_bbox(char.get("bbox"))
+            if not text.isalnum() or bbox is None:
+                continue
+            font = char.get("font") or {}
+            size = font.get("size")
+            if not isinstance(size, (int, float)) or not math.isfinite(size) or size >= 0:
+                return visual_angle
+            area = (bbox[2] - bbox[0]) * (bbox[3] - bbox[1])
+            name = str(font.get("name") or "")
+            try:
+                flags = int(font.get("flags") or 0) if name else 0
+            except (TypeError, ValueError):
+                flags = 0
+            identity = (text, name, flags, float(size))
+            repeated = False
+            for previous in seen.get(identity, []):
+                intersection = max(0, min(bbox[2], previous[2]) - max(bbox[0], previous[0])) * max(
+                    0, min(bbox[3], previous[3]) - max(bbox[1], previous[1])
+                )
+                union = area + (previous[2] - previous[0]) * (previous[3] - previous[1]) - intersection
+                if intersection >= 0.5 * union:
+                    repeated = True
+                    break
+            if repeated:
+                continue
+            # 描粗副层只从方向证据去重，不删除或重排原始字符成员。
+            seen.setdefault(identity, []).append(bbox)
+            x, y = (bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2
+            positions.append((x * axis_x + y * axis_y, -x * axis_y + y * axis_x))
+            heights.append(bbox[3] - bbox[1] if axis_x else bbox[2] - bbox[0])
+    if len(positions) < 2:
+        return visual_angle
+    median_height = statistics.median(heights)
+    forward = positions[-1][0] - positions[0][0]
+    sideways = positions[-1][1] - positions[0][1]
+    if (
+        forward < 0.5 * median_height
+        or abs(math.degrees(math.atan2(sideways, forward))) > _PDFTEXT_HORIZONTAL_BASELINE_MAX_ANGLE_DEGREES
+        or max(position[1] for position in positions) - min(position[1] for position in positions)
+        > _PDFTEXT_HORIZONTAL_BASELINE_MAX_DISPERSION_RATIO * median_height
+        or any(after[0] < before[0] - 0.1 * median_height for before, after in zip(positions, positions[1:]))
+    ):
+        return visual_angle
+    return float(cardinal)
+
+
 def _resolve_pdftext_formula_candidate_angle(
     pdf_line: dict[str, Any],
     *,
@@ -366,6 +426,7 @@ def _resolve_pdftext_formula_candidate_angle(
 ) -> int | None:
     """保留小角度字体矩阵下的公式专用粗行，未被公式认领时不回流正文。"""
     visual_angle = (_pdftext_angle_degrees(pdf_line.get("rotation")) + int(page_rotation or 0)) % 360.0
+    visual_angle = _correct_negative_scale_angle(pdf_line, visual_angle)
     nearest = min(supported_angles, key=lambda angle: _circular_angle_distance(visual_angle, angle))
     if _circular_angle_distance(visual_angle, nearest) > _PDFTEXT_SHEARED_HORIZONTAL_MAX_ANGLE_DEGREES:
         return None

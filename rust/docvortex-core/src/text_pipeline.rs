@@ -322,7 +322,84 @@ fn horizontal_baseline(
     angle <= 2.0 && maximum - minimum <= 0.75 * median
 }
 
-/// 解析常规方向及公式专用小角度候选，保持原判定顺序。
+/// 负字号必须同时得到源字符正向基线证实才纠正半周翻转，单字不作推断。
+fn correct_negative_scale_angle(
+    spans: &[TextSpan],
+    visual: f64,
+    chars: &[TextChar],
+    unicode: &UnicodeProperties,
+) -> f64 {
+    let candidate = (visual + 180.0).rem_euclid(360.0);
+    let cardinal = [0.0, 90.0, 180.0, 270.0]
+        .into_iter()
+        .min_by(|a, b| angle_distance(candidate, *a).total_cmp(&angle_distance(candidate, *b)))
+        .unwrap();
+    if angle_distance(candidate, cardinal) > 0.1 {
+        return visual;
+    }
+    let (axis_x, axis_y) = match cardinal as i32 {
+        0 => (1.0, 0.0),
+        90 => (0.0, 1.0),
+        180 => (-1.0, 0.0),
+        _ => (0.0, -1.0),
+    };
+    let mut positions = Vec::new();
+    let mut heights = Vec::new();
+    let mut seen: HashMap<(&str, Option<usize>, u64), Vec<[f64; 4]>> = HashMap::new();
+    for index in spans.iter().flat_map(|span| span.start..span.end) {
+        let ch = &chars[index];
+        if ch.text.is_empty()
+            || !ch.text.chars().all(|c| unicode.flags(c) & 1 != 0)
+        {
+            continue;
+        }
+        let Some(bbox) = crate::geometry::normalize(Some(ch.bbox), false) else {
+            continue;
+        };
+        if bbox[0] >= bbox[2] || bbox[1] >= bbox[3] {
+            continue;
+        }
+        if !ch.font_size.is_some_and(|size| size.is_finite() && size < 0.0) {
+            return visual;
+        }
+        let area = (bbox[2] - bbox[0]) * (bbox[3] - bbox[1]);
+        let previous = seen
+            .entry((ch.text.as_str(), ch.signature_id, ch.font_size.unwrap().to_bits()))
+            .or_default();
+        if previous.iter().any(|old| {
+            let intersection = (bbox[2].min(old[2]) - bbox[0].max(old[0])).max(0.0)
+                * (bbox[3].min(old[3]) - bbox[1].max(old[1])).max(0.0);
+            let union = area + (old[2] - old[0]) * (old[3] - old[1]) - intersection;
+            intersection >= 0.5 * union
+        }) {
+            continue;
+        }
+        // 描粗副层只从方向证据去重，不删除或重排原始字符成员。
+        previous.push(bbox);
+        let (x, y) = ((bbox[0] + bbox[2]) / 2.0, (bbox[1] + bbox[3]) / 2.0);
+        positions.push((x * axis_x + y * axis_y, -x * axis_y + y * axis_x));
+        heights.push(if axis_x != 0.0 { bbox[3] - bbox[1] } else { bbox[2] - bbox[0] });
+    }
+    if positions.len() < 2 {
+        return visual;
+    }
+    let median_height = crate::median(heights);
+    let first = positions.first().unwrap();
+    let last = positions.last().unwrap();
+    let (forward, sideways) = (last.0 - first.0, last.1 - first.1);
+    let minimum = positions.iter().map(|p| p.1).fold(f64::INFINITY, f64::min);
+    let maximum = positions.iter().map(|p| p.1).fold(f64::NEG_INFINITY, f64::max);
+    if forward < 0.5 * median_height
+        || sideways.atan2(forward).to_degrees().abs() > 2.0
+        || maximum - minimum > 0.75 * median_height
+        || positions.windows(2).any(|pair| pair[1].0 < pair[0].0 - 0.1 * median_height)
+    {
+        return visual;
+    }
+    cardinal
+}
+
+/// 解析常规方向及公式专用小角度候选，在白名单前恢复已证实的负尺度方向。
 fn visual_angle(
     spans: &[TextSpan],
     rotation: f64,
@@ -332,6 +409,7 @@ fn visual_angle(
     supported: &[f64],
 ) -> Option<(i32, bool)> {
     let visual = (angle_degrees(rotation) + page_rotation as f64).rem_euclid(360.0);
+    let visual = correct_negative_scale_angle(spans, visual, chars, unicode);
     for &angle in supported {
         if angle_distance(visual, angle) <= 0.1 {
             return Some((angle as i32, false));
