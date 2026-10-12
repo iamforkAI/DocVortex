@@ -49,6 +49,7 @@ PUBLIC_API: dict[str, tuple[str, ...]] = {
         "apply_text_evidence",
         "classify_char_script_roles",
         "is_generated_cjk_space",
+        "is_ligature_expansion_space",
         "join_tight_text",
         "needs_tight_space",
         "prepare_table_page",

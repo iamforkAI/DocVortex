@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from .....document.pdf.text.spacing import is_generated_cjk_space, needs_tight_space
+from .....document.pdf.text.spacing import is_generated_cjk_space, is_ligature_expansion_space, needs_tight_space
 from .....foundation._text import is_hyphen_at_line_end
 from .common import _normalize_match_fragment
 from .matching import _assign_lines_to_blocks, _project_content_chars, _match_line_without_terminal_hyphen
@@ -43,6 +43,7 @@ def prepare_spacing_lines(lines, space_before=None):
             index
             for index in range(1, len(line.chars) - 1)
             if is_generated_cjk_space(line.chars[index - 1], line.chars[index], line.chars[index + 1])
+            or is_ligature_expansion_space(line.chars, index)
         }
         if not positions and not continuation and not suppressed:
             continue

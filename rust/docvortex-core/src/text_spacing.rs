@@ -76,6 +76,106 @@ pub fn generated_cjk_space(a: &Character, space: &Character, b: &Character) -> b
     }
 }
 
+/// 仅忽略同一拉丁连字字形内部的空格，源编号、字体、对象与几何证据均需一致。
+pub fn ligature_expansion_space(chars: &[&Character], index: usize) -> bool {
+    if index == 0 || index + 1 >= chars.len() || chars[index].text != " " {
+        return false;
+    }
+    let right = chars[index + 1];
+    if right.text.len() != 1 || !right.text.as_bytes()[0].is_ascii_alphabetic() {
+        return false;
+    }
+    for count in 1..=index.min(3) {
+        let glyph = &chars[index - count..index];
+        let text: String = glyph.iter().map(|ch| ch.text.as_str()).collect();
+        if !matches!(
+            text.as_str(),
+            "fi" | "fl"
+                | "ff"
+                | "ffi"
+                | "ffl"
+                | "ft"
+                | "st"
+                | "ﬁ"
+                | "ﬂ"
+                | "ﬀ"
+                | "ﬃ"
+                | "ﬄ"
+                | "ﬅ"
+                | "ﬆ"
+        ) {
+            continue;
+        }
+        let first = glyph[0];
+        let records = &chars[index - count..=index + 1];
+        if first.object.is_none()
+            || records
+                .windows(2)
+                .any(|pair| pair[0].index.checked_add(1) != Some(pair[1].index))
+            || records
+                .iter()
+                .any(|ch| ch.object != first.object || ch.font != first.font)
+        {
+            continue;
+        }
+        let degrees = first.writing_angle.to_degrees().rem_euclid(360.0);
+        let angle = ((degrees / 90.0).round_ties_even() as i32 * 90) % 360;
+        if records.iter().any(|ch| {
+            !ch.writing_angle.is_finite()
+                || ((ch.writing_angle.to_degrees() - angle as f64 + 180.0).rem_euclid(360.0)
+                    - 180.0)
+                    .abs()
+                    > 0.1
+                || ch
+                    .tight
+                    .is_none_or(|bbox| bbox.iter().any(|v| !v.is_finite()))
+                || ch
+                    .origin
+                    .is_none_or(|point| point.iter().any(|v| !v.is_finite()))
+        }) {
+            continue;
+        }
+        let boxes: Vec<_> = records
+            .iter()
+            .map(|ch| local(ch.tight.unwrap(), angle))
+            .collect();
+        let points: Vec<_> = records
+            .iter()
+            .map(|ch| {
+                let p = ch.origin.unwrap();
+                let p = local([p[0], p[1], p[0], p[1]], angle);
+                [p[0], p[1]]
+            })
+            .collect();
+        let bbox = boxes[0];
+        let height = bbox[3] - bbox[1];
+        if height.min(bbox[2] - bbox[0]) <= 0.0
+            || (1..count).any(|i| {
+                (0..4).any(|j| (bbox[j] - boxes[i][j]).abs() > 0.01 * height)
+                    || (0..2).any(|j| (points[0][j] - points[i][j]).abs() > 0.01 * height)
+            })
+        {
+            continue;
+        }
+        let next = boxes[count + 1];
+        let gap = next[0] - bbox[2];
+        if bbox[0] <= points[count][0]
+            && points[count][0] < bbox[2]
+            && points[count..]
+                .iter()
+                .all(|p| (p[1] - points[0][1]).abs() <= 0.15 * height)
+            && gap >= -0.15 * height
+            && gap <= 0.15 * height
+            && (points[count + 1][0] - bbox[2]).abs() <= 0.15 * height
+            && next[3] > next[1]
+            && bbox[3].min(next[3]) - bbox[1].max(next[1]) >= 0.5 * height.min(next[3] - next[1])
+        {
+            return true;
+        }
+    }
+    false
+}
+
 /// 只接受解释器确认的普通单字形，避免两端标点或连字展开改变语义。
 fn ordinary(text: &str, letters: &HashSet<char>) -> bool {
     let mut chars = text.chars();
@@ -199,6 +299,48 @@ mod tests {
             loose: None,
             tight: Some(bbox),
             visible: None,
+        }
+    }
+
+    /// 四向连字使用同一墨迹框；真实词界、不同来源或字号缩放不应导致过删。
+    #[test]
+    fn ligature_internal_spaces_require_complete_evidence() {
+        for angle in [0, 90, 180, 270] {
+            let mut chars: Vec<_> = ["f", "i", " ", "n"]
+                .iter()
+                .enumerate()
+                .map(|(index, text)| character(text, index, angle))
+                .collect();
+            for (index, ch) in chars.iter_mut().enumerate() {
+                let (bbox, origin) = match index {
+                    2 => ([12.0, 19.99, 15.0, 20.0], [12.0, 20.0]),
+                    3 => ([15.3, 10.0, 20.0, 20.0], [15.2, 20.0]),
+                    _ => ([10.0, 10.0, 15.0, 20.0], [10.0, 20.0]),
+                };
+                ch.tight = Some(local(bbox, (360 - angle) % 360));
+                let p = local(
+                    [origin[0], origin[1], origin[0], origin[1]],
+                    (360 - angle) % 360,
+                );
+                ch.origin = Some([p[0], p[1]]);
+                ch.object = Some(1);
+                ch.generated = Some(false);
+            }
+            assert!(ligature_expansion_space(
+                &chars.iter().collect::<Vec<_>>(),
+                2
+            ));
+            chars[0].object = Some(2);
+            assert!(!ligature_expansion_space(
+                &chars.iter().collect::<Vec<_>>(),
+                2
+            ));
+            chars[0].object = Some(1);
+            chars[3].tight = Some(local([18.0, 10.0, 23.0, 20.0], (360 - angle) % 360));
+            assert!(!ligature_expansion_space(
+                &chars.iter().collect::<Vec<_>>(),
+                2
+            ));
         }
     }
 

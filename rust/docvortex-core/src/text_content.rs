@@ -173,6 +173,10 @@ pub fn build(data: &TextSnapshot, groups: &[Vec<usize>], rules: &Rules<'_>) -> V
                 (widths[widths.len() / 2 - 1] + widths[widths.len() / 2]) / 2.0
             };
             let mut text = String::new();
+            let spacing_chars: Vec<_> = chars
+                .iter()
+                .map(|(_, _, source)| &data.chars[*source])
+                .collect();
             for (index, &(value, bbox, source)) in chars.iter().enumerate() {
                 if breaks.contains(value) {
                     continue;
@@ -180,11 +184,11 @@ pub fn build(data: &TextSnapshot, groups: &[Vec<usize>], rules: &Rules<'_>) -> V
                 if tight_spacing.get(group_index).copied().unwrap_or(false)
                     && index > 0
                     && index + 1 < chars.len()
-                    && crate::text_spacing::generated_cjk_space(
+                    && (crate::text_spacing::generated_cjk_space(
                         &data.chars[chars[index - 1].2],
                         &data.chars[source],
                         &data.chars[chars[index + 1].2],
-                    )
+                    ) || crate::text_spacing::ligature_expansion_space(&spacing_chars, index))
                 {
                     continue;
                 }

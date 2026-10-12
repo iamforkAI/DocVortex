@@ -23,7 +23,7 @@ def native():
     value = get_native()
     if value is None:
         pytest.skip("Python backend")
-    assert value.PROTOCOL_VERSION == 34
+    assert value.PROTOCOL_VERSION == 35
     return value
 
 

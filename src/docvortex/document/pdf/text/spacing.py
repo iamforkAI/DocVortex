@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import math
 import unicodedata
+from collections.abc import Mapping, Sequence
 from functools import lru_cache
+from ....schema import BBox
 from ._contracts import Char
 
 
@@ -19,6 +21,81 @@ def _han_letter(text: str) -> bool:
 
 
 _CHINESE_PUNCTUATION = frozenset("、。，；：？！“”‘’（）【】《》〈〉「」『』〔〕［］｛｝—…·")
+_LIGATURE_EXPANSIONS = frozenset({"fi", "fl", "ff", "ffi", "ffl", "ft", "st"})
+_LIGATURE_GLYPHS = {"ﬁ": "fi", "ﬂ": "fl", "ﬀ": "ff", "ﬃ": "ffi", "ﬄ": "ffl", "ﬅ": "ft", "ﬆ": "st"}
+
+
+def is_ligature_expansion_space(
+    chars: Sequence[Char],
+    index: int,
+    *,
+    tight_bboxes: Mapping[int, BBox] | None = None,
+    origins: Mapping[int, tuple[float, float]] | None = None,
+) -> bool:
+    """仅忽略连字展开字形内部的空格，保留真实词界和原始字符记录。"""
+    if not 0 < index < len(chars) - 1 or chars[index].get("char") != " ":
+        return False
+    right = chars[index + 1]
+    right_text = str(right.get("char", ""))
+    if len(right_text) != 1 or not right_text.isascii() or not right_text.isalpha():
+        return False
+    try:
+        for count in range(1, min(3, index) + 1):
+            glyph = chars[index - count : index]
+            text = "".join(str(char.get("char", "")) for char in glyph)
+            if _LIGATURE_GLYPHS.get(text, text) not in _LIGATURE_EXPANSIONS:
+                continue
+            first = glyph[0]
+            records = [*glyph, chars[index], right]
+            indices = [char["char_idx"] for char in records]
+            if any(b != a + 1 for a, b in zip(indices, indices[1:])):
+                continue
+            object_id = first.get("text_object_id")
+            if object_id is None or any(
+                char.get("text_object_id") != object_id or char.get("font") != first.get("font") for char in records
+            ):
+                continue
+            degrees = math.degrees(float(first["writing_angle"])) % 360
+            angle = int(round(degrees / 90) * 90) % 360
+            if any(
+                not math.isfinite(float(char["writing_angle"]))
+                or abs((math.degrees(float(char["writing_angle"])) - angle + 180) % 360 - 180) > 0.1
+                for char in records
+            ):
+                continue
+            boxes = [(tight_bboxes or {}).get(char["char_idx"], char.get("tight_bbox")) for char in records]
+            points = [(origins or {}).get(char["char_idx"], char.get("origin")) for char in records]
+            if any(box is None or len(box) != 4 or not all(math.isfinite(value) for value in box) for box in boxes):
+                continue
+            if any(point is None or len(point) != 2 or not all(math.isfinite(value) for value in point) for point in points):
+                continue
+            local_boxes = [_local_box(box, angle) for box in boxes]
+            local_points = [_local_box((*point, *point), angle)[:2] for point in points]
+            box = local_boxes[0]
+            height = box[3] - box[1]
+            if min(height, box[2] - box[0]) <= 0:
+                continue
+            # 同一字形的展开记录必须共享墨迹框及起点，不能只凭字母组合删空格。
+            if any(
+                max(abs(a - b) for a, b in zip(box, other)) > 0.01 * height
+                or max(abs(a - b) for a, b in zip(local_points[0], point)) > 0.01 * height
+                for other, point in zip(local_boxes[1:count], local_points[1:count])
+            ):
+                continue
+            space_origin, right_origin = local_points[-2:]
+            right_box = local_boxes[-1]
+            if (
+                box[0] <= space_origin[0] < box[2]
+                and all(abs(point[1] - local_points[0][1]) <= 0.15 * height for point in local_points[count:])
+                and -0.15 * height <= right_box[0] - box[2] <= 0.15 * height
+                and abs(right_origin[0] - box[2]) <= 0.15 * height
+                and min(box[3], right_box[3]) - max(box[1], right_box[1]) >= 0.5 * min(height, right_box[3] - right_box[1])
+                and right_box[3] > right_box[1]
+            ):
+                return True
+    except (KeyError, TypeError, ValueError, OverflowError):
+        return False
+    return False
 
 
 def is_generated_cjk_space(
@@ -198,7 +275,10 @@ def join_tight_text(chars, *, tight_bboxes=None, origins=None) -> str:
     parts = []
     previous = None
     for index, char in enumerate(chars):
-        if 0 < index < len(chars) - 1 and is_generated_cjk_space(chars[index - 1], char, chars[index + 1], origins=origins):
+        if 0 < index < len(chars) - 1 and (
+            is_generated_cjk_space(chars[index - 1], char, chars[index + 1], origins=origins)
+            or is_ligature_expansion_space(chars, index, tight_bboxes=tight_bboxes, origins=origins)
+        ):
             continue
         if previous is not None and needs_tight_space(previous, char, tight_bboxes=tight_bboxes, origins=origins):
             parts.append(" ")

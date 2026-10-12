@@ -9,7 +9,7 @@ from typing import Any
 
 from ..document.pdf import PDFPage, PDFPageSnapshot, PDFPageTextGeometry, PDFPageVectorGeometry
 from ..schema import BBox
-from ..document.pdf.text.spacing import is_generated_cjk_space, join_tight_text, needs_tight_space
+from ..document.pdf.text.spacing import is_generated_cjk_space, is_ligature_expansion_space, join_tight_text, needs_tight_space
 from .native.pdf._script_geometry import ScriptRole, classify_char_script_roles
 from .native.pdf._table_recovery.contracts import NativeTableRectangle, NativeTableRule, PDFTableRecoveryError
 from .native.pdf.inline.types import (
@@ -218,6 +218,7 @@ def project_table_text(ocr_result: Any, table_size: tuple[int, int]) -> str:
 
 __all__ = [
     "is_generated_cjk_space",
+    "is_ligature_expansion_space",
     "join_tight_text",
     "needs_tight_space",
     "PDFTableRecoveryError",

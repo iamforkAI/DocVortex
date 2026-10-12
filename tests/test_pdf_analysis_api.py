@@ -20,6 +20,7 @@ from docvortex.analyzers.pdf import (
     PDFTextScriptRange,
     apply_text_evidence,
     is_generated_cjk_space,
+    is_ligature_expansion_space,
     prepare_table_page,
     prepare_text_evidence,
     recover_table_region,
@@ -66,6 +67,7 @@ def test_new_api_annotations_resolve() -> None:
     """公共类型和函数不依赖调用方预加载旧模块才能解析注解。"""
     for value in (
         is_generated_cjk_space,
+        is_ligature_expansion_space,
         PDFTablePage,
         PDFTableResult,
         PDFTextEvidence,
