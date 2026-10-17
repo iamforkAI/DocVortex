@@ -394,8 +394,8 @@ def test_outside_crop_uses_effective_visible_box(rotation: int, unit: int, media
 
 
 @pytest.mark.parametrize("marked", [False, True])
-@pytest.mark.parametrize("load_full", [False, True])
-def test_acroform_appearance_and_catalog_survive_layout_copy(marked: bool, load_full: bool, monkeypatch) -> None:
+@pytest.mark.parametrize("load_full", [None, "recursion", "wrapped_recursion"])
+def test_acroform_appearance_and_catalog_survive_layout_copy(marked: bool, load_full: str | None, monkeypatch) -> None:
     """复制表单目录及 Widget 外观，空布局像素相等，有框布局也不丢勾选图形。"""
     if load_full:
         import docvortex.visualization as visualization
@@ -403,6 +403,10 @@ def test_acroform_appearance_and_catalog_survive_layout_copy(marked: bool, load_
         def force_full_loading(*args, **kwargs):
             """模拟递归克隆失败，只让官方完整加载分支接收真实表单文档。"""
             if "clone_from" in kwargs:
+                if load_full == "wrapped_recursion":
+                    from pypdf.errors import PdfReadError
+
+                    raise PdfReadError("Maximum recursion depth reached.") from RecursionError("deep structure")
                 raise RecursionError("deep structure")
             return PdfWriter(*args, **kwargs)
 

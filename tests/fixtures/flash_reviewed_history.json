@@ -627,18 +627,18 @@
       "pages": [
         {
           "page_index": 0,
-          "fingerprint": "e8c7373da4ff33552d4680a87332f779d61f14ca2ce8ccad418dd19f6d434178",
-          "bbox_fingerprint": "70b6df5ee386b8a09fd7264d1ded0d9db6ec28bc62225997b0ccebdbb92d1ffb"
+          "fingerprint": "377d7c873ce183fa9884dd0cac71f058a75246306037b317064bfa698b96855f",
+          "bbox_fingerprint": "a3e71405551e26c7a5ba790d897be0fc2cb9635259c2c44923cb8a177bf1c770"
         },
         {
           "page_index": 1,
-          "fingerprint": "de41614800af2744ac923df98b75258195676ea84a8859dac60d20c742a40d6c",
-          "bbox_fingerprint": "ef440221392995c6a72a649e69032604b48a486fc14671b825eb008b3c6314f8"
+          "fingerprint": "c56d4f67d789500f03c74cead6c61bae1d51a8535801ac86d4bbd8d1dcc52c0b",
+          "bbox_fingerprint": "438f39734502b843c032d46758b574bfac6b487f9a6de83cb8f6572055ddb109"
         },
         {
           "page_index": 2,
-          "fingerprint": "3afb4db2a243c0fa76fa5edcb1b1f13d61bd25521fb605c0e2f66f6198c05d7b",
-          "bbox_fingerprint": "284601fdd56888d397e3d94b853fe5c1c17b9715b4873aff711e01f579633602"
+          "fingerprint": "a9e6f4dc59b21a913f11c6f719aa089b1293675ce7ae94a3df76c0175425f591",
+          "bbox_fingerprint": "398a030256331e1c3bebd58658d366d2dd7ae02e77897734f960a0af41c12351"
         },
         {
           "page_index": 3,
@@ -647,8 +647,8 @@
         },
         {
           "page_index": 4,
-          "fingerprint": "091efd6e9e6896ec41919411dbad18f03632926cd62abc04d3b99414c4f00e7f",
-          "bbox_fingerprint": "05b1ddb3524caca2b5e408ff8af9acb8f36581e895ced841e073d9856f478036"
+          "fingerprint": "f72c046d6cca75b5627b0e3be2a933078fe44fca354ccd22c47a357de61b3e49",
+          "bbox_fingerprint": "e615f4f8caa77b835a851e3e7e1d75cd326b8799e81b2e946f5e3311ef2c94f3"
         }
       ]
     },

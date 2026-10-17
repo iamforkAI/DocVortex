@@ -22,7 +22,9 @@ import traceback
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path[:0] = [str(ROOT / "src"), str(ROOT)]
+if __name__ == "__main__":
+    # 仅直接运行源码工具时选择 checkout；导入不能改变 spawn 子进程使用的已安装 wheel。
+    sys.path[:0] = [str(ROOT / "src"), str(ROOT)]
 
 from tools.review_flash_audit import fingerprint  # noqa: E402
 
@@ -491,7 +493,7 @@ def _worker_command(manifest: Path, output: Path, name: str, code: str) -> list[
 def _failed_process(folder: Path, document: dict, code: str, message: str, returncode: int | None = None) -> dict:
     """即使 worker 原生崩溃或超时，也由父进程保存可继续的阶段失败记录。"""
     state = (
-        json.loads((folder / "status.json").read_text()) if (folder / "status.json").is_file() else _new_status(document, code)
+        json.loads((folder / "status.json").read_text(encoding='utf-8')) if (folder / "status.json").is_file() else _new_status(document, code)
     )
     stage = next((name for name in STAGES if state["stages"][name] == "running"), None)
     if stage is None:
@@ -510,7 +512,7 @@ def _run_one(manifest: Path, output: Path, document: dict, code: str, resume: bo
     folder = output / "documents" / document["name"]
     try:
         if folder.exists() and resume and _resumable(folder, document, code):
-            state = json.loads((folder / "status.json").read_text())
+            state = json.loads((folder / "status.json").read_text(encoding='utf-8'))
             return {**state, "resumed": True}
         if folder.exists() and not resume and any(folder.iterdir()):
             raise FileExistsError("文档输出已存在；使用 --resume 或选择新运行目录")
@@ -524,14 +526,26 @@ def _run_one(manifest: Path, output: Path, document: dict, code: str, resume: bo
             try:
                 returncode = process.wait(timeout=timeout)
             except subprocess.TimeoutExpired:
-                os.killpg(process.pid, signal.SIGTERM)
+                if sys.platform == "win32":
+                    # Windows 没有 killpg；终止整棵进程树，包含 worker 启动的渲染子进程。
+                    subprocess.run(
+                        ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                        stdout=errors,
+                        stderr=errors,
+                        check=False,
+                    )
+                else:
+                    os.killpg(process.pid, signal.SIGTERM)
                 try:
                     process.wait(timeout=5)
                 except subprocess.TimeoutExpired:
-                    os.killpg(process.pid, signal.SIGKILL)
+                    if sys.platform == "win32":
+                        process.kill()
+                    else:
+                        os.killpg(process.pid, signal.SIGKILL)
                     process.wait()
                 return _failed_process(folder, document, code, f"worker 超过 {timeout:g} 秒超时")
-        state = json.loads((folder / "status.json").read_text())
+        state = json.loads((folder / "status.json").read_text(encoding='utf-8'))
         if returncode != 0 and state["status"] != "failed":
             return _failed_process(folder, document, code, f"worker 异常退出：{returncode}", returncode)
         if returncode == 0 and state["status"] != "succeeded":

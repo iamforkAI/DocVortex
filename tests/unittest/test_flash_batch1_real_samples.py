@@ -64,7 +64,7 @@ def test_negative_scale_report_restores_every_physical_page_and_heading(tmp_path
     assert "第一，在抗击疫情、服务发展中展现" in texts[1]
     assert "境外单位疫情防控工作" in texts[30]
     result.export(tmp_path / "report.html", output_format="html")
-    assert "第一，在抗击疫情" in (tmp_path / "report.html").read_text()
+    assert "第一，在抗击疫情" in (tmp_path / "report.html").read_text(encoding="utf-8")
 
 
 def test_real_signature_widgets_keep_visible_appearance_when_no_boxes_are_added():

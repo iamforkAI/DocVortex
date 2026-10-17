@@ -9,7 +9,7 @@ import sys
 
 import pytest
 
-from _flash_pdf_test_utils import _assert_history_page, formula_detection_evidence
+from _flash_pdf_test_utils import _assert_history_page, _visible_text, formula_detection_evidence
 from test_flash_pdf_char_geometry import _read_pdf_fixture
 from docvortex.analyzers.native.pdf.pipeline import _analyze_native_document
 from docvortex.document.pdf import PDFDocument
@@ -28,3 +28,18 @@ def test_reviewed_historical_pages_keep_content_order_types_and_bounds(document:
     assert len(pages) == len(document["pages"])
     for index, (page, expected) in enumerate(zip(pages, document["pages"], strict=True)):
         _assert_history_page(page, expected, (document["name"], index + 1), sys.platform)
+
+
+def test_mixed_elements_ligature_words_match_visible_source() -> None:
+    """整本五页原件的标题和页眉不拆开连字词，避免金标保留旧的字形内部空格。"""
+    document = next(item for item in MANIFEST["documents"] if item["name"] == "mixed_elements_pages_11_15")
+    payload = _read_pdf_fixture(ROOT / document["path"])
+    assert hashlib.sha256(payload).hexdigest() == document["sha256"]
+    with PDFDocument(payload) as pdf:
+        pages = _analyze_native_document(pdf)
+    assert len(pages) == 5
+    for index, number in ((0, 2), (1, 1)):
+        expected = f"{number}. Effects on esophageal lesions induced by reflux of gastric juice"
+        assert sum(_visible_text(block) == expected for block in pages[index]) == 1
+    for index in (2, 4):
+        assert sum(block["type"] == "header" and _visible_text(block) == "Inflammopharmacology" for block in pages[index]) == 1

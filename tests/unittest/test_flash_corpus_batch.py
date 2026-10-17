@@ -6,11 +6,21 @@ from copy import deepcopy
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 import sys
 
 import pytest
 
 from tools import review_flash_corpus as corpus
+
+
+def test_import_preserves_package_search_path() -> None:
+    """导入审阅工具不能让后续 spawn 渲染进程绕过已安装的原生 wheel。"""
+    subprocess.run(
+        [sys.executable, "-c", "import sys; before=list(sys.path); import tools.review_flash_corpus; assert sys.path == before"],
+        cwd=Path(__file__).parents[2],
+        check=True,
+    )
 
 
 @pytest.mark.parametrize("count", [1, 100, 101, 1017])
@@ -145,10 +155,10 @@ def test_native_worker_exit_is_saved_and_does_not_stop_later_documents(tmp_path,
     def command(manifest, output, name, code):
         """失败进程模拟原生终止，成功进程只提交调度状态。"""
         script = (
-            "import json,os,signal,sys;from pathlib import Path;"
+            "import json,os,sys;from pathlib import Path;"
             "folder=Path(sys.argv[1]);name=sys.argv[2];"
-            "os.kill(os.getpid(),signal.SIGKILL) if name=='crash' else None;"
-            "state=json.loads((folder/'status.json').read_text());"
+            "os._exit(73) if name=='crash' else None;"
+            "state=json.loads((folder/'status.json').read_text(encoding='utf-8'));"
             "state.update(status='succeeded',visual_review='pending',review_pages=[1]);"
             "state['stages']={key:'succeeded' for key in state['stages']};"
             "(folder/'status.json').write_text(json.dumps(state))"
@@ -160,32 +170,33 @@ def test_native_worker_exit_is_saved_and_does_not_stop_later_documents(tmp_path,
     report = corpus.run_batch(manifest, output, workers=1, timeout=10)
     states = {document["document_id"]: document for document in report["documents"]}
     assert states["crash"]["status"] == "failed"
-    assert states["crash"]["returncode"] < 0
+    assert states["crash"]["returncode"] == 73
     assert states["success"]["status"] == states["later"]["status"] == "succeeded"
     assert states["success"]["visual_review"] == "pending"
-    saved = json.loads((output / "documents/crash/status.json").read_text())
+    saved = json.loads((output / "documents/crash/status.json").read_text(encoding='utf-8'))
     assert saved["stages"]["parse"] == "failed"
     assert saved["errors"][0]["type"] == "WorkerProcessError"
-    assert json.loads((output / "summary.json").read_text())["counts"] == {"failed": 1, "succeeded": 2}
+    assert json.loads((output / "summary.json").read_text(encoding='utf-8'))["counts"] == {"failed": 1, "succeeded": 2}
     assert "visual_review_completed" not in json.dumps(report)
 
 
 def test_timeout_records_active_stage_and_reaps_worker(tmp_path, monkeypatch):
     """超时会终止独立进程并保留当时阶段，而不是把整轮保持在 running。"""
     manifest = _manifest(tmp_path, ["timeout"])
-    document = json.loads(manifest.read_text())["documents"][0]
+    document = json.loads(manifest.read_text(encoding='utf-8'))["documents"][0]
 
     def command(manifest, output, name, code):
         """在导出阶段暂停独立进程，测试父进程超时回收。"""
         script = (
             "import json,time,sys;from pathlib import Path;folder=Path(sys.argv[1]);"
-            "state=json.loads((folder/'status.json').read_text());state['stages']['export']='running';"
+            "state=json.loads((folder/'status.json').read_text(encoding='utf-8'));state['stages']['export']='running';"
             "(folder/'status.json').write_text(json.dumps(state));time.sleep(30)"
         )
         return [sys.executable, "-c", script, str(output / "documents" / name)]
 
     monkeypatch.setattr(corpus, "_worker_command", command)
-    state = corpus._run_one(manifest, tmp_path / "run", document, "b" * 64, False, 0.5)
+    # Windows CI 启动解释器可能超过半秒；超时仍远短于 worker 的实际阻塞时间。
+    state = corpus._run_one(manifest, tmp_path / "run", document, "b" * 64, False, 5)
     assert state["status"] == "failed"
     assert state["stages"]["export"] == "failed"
     assert "超时" in state["errors"][0]["message"]
@@ -194,7 +205,7 @@ def test_timeout_records_active_stage_and_reaps_worker(tmp_path, monkeypatch):
 def test_resume_rejects_source_or_code_drift_without_overwriting_evidence(tmp_path):
     """恢复只能针对同一原件和源码，拒绝时必须保留已有输出。"""
     manifest = _manifest(tmp_path, ["sample"])
-    document = json.loads(manifest.read_text())["documents"][0]
+    document = json.loads(manifest.read_text(encoding='utf-8'))["documents"][0]
     folder = tmp_path / "run/documents/sample"
     folder.mkdir(parents=True)
     state = corpus._new_status(document, "b" * 64)
@@ -226,7 +237,7 @@ def test_retry_archives_failed_artifacts_instead_of_overwriting(tmp_path):
 def test_manifest_source_identity_is_checked_before_starting_any_worker(tmp_path, monkeypatch):
     """清单生成后解析源码发生变化时，应在任何文档开始前拒绝新旧混用。"""
     manifest = _manifest(tmp_path, ["sample"])
-    data = json.loads(manifest.read_text())
+    data = json.loads(manifest.read_text(encoding='utf-8'))
     data["environment"] = {"source_sha256": "a" * 64}
     manifest.write_text(json.dumps(data))
     monkeypatch.setattr(corpus, "fingerprint", lambda: "b" * 64)

@@ -345,12 +345,12 @@ fn correct_negative_scale_angle(
     };
     let mut positions = Vec::new();
     let mut heights = Vec::new();
-    let mut seen: HashMap<(&str, Option<usize>, u64), Vec<[f64; 4]>> = HashMap::new();
+    // 字符、字体签名和字号共同确定描粗副层的去重身份。
+    type GlyphIdentity<'a> = (&'a str, Option<usize>, u64);
+    let mut seen: HashMap<GlyphIdentity<'_>, Vec<[f64; 4]>> = HashMap::new();
     for index in spans.iter().flat_map(|span| span.start..span.end) {
         let ch = &chars[index];
-        if ch.text.is_empty()
-            || !ch.text.chars().all(|c| unicode.flags(c) & 1 != 0)
-        {
+        if ch.text.is_empty() || !ch.text.chars().all(|c| unicode.flags(c) & 1 != 0) {
             continue;
         }
         let Some(bbox) = crate::geometry::normalize(Some(ch.bbox), false) else {
@@ -359,12 +359,19 @@ fn correct_negative_scale_angle(
         if bbox[0] >= bbox[2] || bbox[1] >= bbox[3] {
             continue;
         }
-        if !ch.font_size.is_some_and(|size| size.is_finite() && size < 0.0) {
+        if !ch
+            .font_size
+            .is_some_and(|size| size.is_finite() && size < 0.0)
+        {
             return visual;
         }
         let area = (bbox[2] - bbox[0]) * (bbox[3] - bbox[1]);
         let previous = seen
-            .entry((ch.text.as_str(), ch.signature_id, ch.font_size.unwrap().to_bits()))
+            .entry((
+                ch.text.as_str(),
+                ch.signature_id,
+                ch.font_size.unwrap().to_bits(),
+            ))
             .or_default();
         if previous.iter().any(|old| {
             let intersection = (bbox[2].min(old[2]) - bbox[0].max(old[0])).max(0.0)
@@ -378,7 +385,11 @@ fn correct_negative_scale_angle(
         previous.push(bbox);
         let (x, y) = ((bbox[0] + bbox[2]) / 2.0, (bbox[1] + bbox[3]) / 2.0);
         positions.push((x * axis_x + y * axis_y, -x * axis_y + y * axis_x));
-        heights.push(if axis_x != 0.0 { bbox[3] - bbox[1] } else { bbox[2] - bbox[0] });
+        heights.push(if axis_x != 0.0 {
+            bbox[3] - bbox[1]
+        } else {
+            bbox[2] - bbox[0]
+        });
     }
     if positions.len() < 2 {
         return visual;
@@ -388,11 +399,16 @@ fn correct_negative_scale_angle(
     let last = positions.last().unwrap();
     let (forward, sideways) = (last.0 - first.0, last.1 - first.1);
     let minimum = positions.iter().map(|p| p.1).fold(f64::INFINITY, f64::min);
-    let maximum = positions.iter().map(|p| p.1).fold(f64::NEG_INFINITY, f64::max);
+    let maximum = positions
+        .iter()
+        .map(|p| p.1)
+        .fold(f64::NEG_INFINITY, f64::max);
     if forward < 0.5 * median_height
         || sideways.atan2(forward).to_degrees().abs() > 2.0
         || maximum - minimum > 0.75 * median_height
-        || positions.windows(2).any(|pair| pair[1].0 < pair[0].0 - 0.1 * median_height)
+        || positions
+            .windows(2)
+            .any(|pair| pair[1].0 < pair[0].0 - 0.1 * median_height)
     {
         return visual;
     }

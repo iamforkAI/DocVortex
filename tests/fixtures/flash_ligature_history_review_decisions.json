@@ -1,0 +1,79 @@
+{
+  "source": "demo/pdfs/mixed_elements_pages_11_15.pdf",
+  "source_sha256": "1fcf7d5e8e0eb0ef901b170f9825ac8aa0d0f9ed60514bb350175a1ae4c43d17",
+  "baseline_revision": "d345b0dd",
+  "baseline_code_sha256": "931098fc2f34237e7bc674dbe98e449aeaebecd7a943db6f86883da97646bc61",
+  "candidate_revision": "72c1151b + CI portability repairs",
+  "candidate_code_sha256": "ec0560733ccae194303885207d969beab9d7db55904694af2047895f6f0c7d9c",
+  "introduced_by": "f5da4e69022f5b0a935fb64579d7f0f7ec7d08b6",
+  "compared_pages": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "visually_reviewed_changed_pages": [
+    1,
+    2,
+    3,
+    5
+  ],
+  "automatically_unchanged_pages": [
+    4
+  ],
+  "decisions": [
+    {
+      "page": 1,
+      "decision": "accept_improvement",
+      "old_fingerprint": "e8c7373da4ff33552d4680a87332f779d61f14ca2ce8ccad418dd19f6d434178",
+      "new_fingerprint": "377d7c873ce183fa9884dd0cac71f058a75246306037b317064bfa698b96855f",
+      "old_bbox_fingerprint": "70b6df5ee386b8a09fd7264d1ded0d9db6ec28bc62225997b0ccebdbb92d1ffb",
+      "new_bbox_fingerprint": "a3e71405551e26c7a5ba790d897be0fc2cb9635259c2c44923cb8a177bf1c770",
+      "change": "refl ux -> reflux",
+      "reason": "原页证实连字词内部没有词界；仅删除字形内部空格，全部块类型、顺序、边界和其他内容保持一致。",
+      "visual_review": "build/ci-repair-20261018/mixed-review-page-1.png",
+      "visual_sha256": "5ed4082ca4d881bdd1b54430bbb78d2e4bee7a9c01db2aec76224b8e6aa66526"
+    },
+    {
+      "page": 2,
+      "decision": "accept_improvement",
+      "old_fingerprint": "de41614800af2744ac923df98b75258195676ea84a8859dac60d20c742a40d6c",
+      "new_fingerprint": "c56d4f67d789500f03c74cead6c61bae1d51a8535801ac86d4bbd8d1dcc52c0b",
+      "old_bbox_fingerprint": "ef440221392995c6a72a649e69032604b48a486fc14671b825eb008b3c6314f8",
+      "new_bbox_fingerprint": "438f39734502b843c032d46758b574bfac6b487f9a6de83cb8f6572055ddb109",
+      "change": "refl ux -> reflux",
+      "reason": "原页证实连字词内部没有词界；仅删除字形内部空格，全部块类型、顺序、边界和其他内容保持一致。",
+      "visual_review": "build/ci-repair-20261018/mixed-review-page-2.png",
+      "visual_sha256": "ac98bf9c3dc66d205f2e59a9241c258edc8b6ae2e16b6967b4f237cd1889d2e5"
+    },
+    {
+      "page": 3,
+      "decision": "accept_improvement",
+      "old_fingerprint": "3afb4db2a243c0fa76fa5edcb1b1f13d61bd25521fb605c0e2f66f6198c05d7b",
+      "new_fingerprint": "a9e6f4dc59b21a913f11c6f719aa089b1293675ce7ae94a3df76c0175425f591",
+      "old_bbox_fingerprint": "284601fdd56888d397e3d94b853fe5c1c17b9715b4873aff711e01f579633602",
+      "new_bbox_fingerprint": "398a030256331e1c3bebd58658d366d2dd7ae02e77897734f960a0af41c12351",
+      "change": "Infl ammopharmacology -> Inflammopharmacology",
+      "reason": "原页证实连字词内部没有词界；仅删除字形内部空格，全部块类型、顺序、边界和其他内容保持一致。",
+      "visual_review": "build/ci-repair-20261018/mixed-review-page-3.png",
+      "visual_sha256": "51c6dd3dfc0684cb301cdc621c0c8c51446097f28d80e5ce9d5c1ed85f665b85"
+    },
+    {
+      "page": 5,
+      "decision": "accept_improvement",
+      "old_fingerprint": "091efd6e9e6896ec41919411dbad18f03632926cd62abc04d3b99414c4f00e7f",
+      "new_fingerprint": "f72c046d6cca75b5627b0e3be2a933078fe44fca354ccd22c47a357de61b3e49",
+      "old_bbox_fingerprint": "05b1ddb3524caca2b5e408ff8af9acb8f36581e895ced841e073d9856f478036",
+      "new_bbox_fingerprint": "e615f4f8caa77b835a851e3e7e1d75cd326b8799e81b2e946f5e3311ef2c94f3",
+      "change": "Infl ammopharmacology -> Inflammopharmacology",
+      "reason": "原页证实连字词内部没有词界；仅删除字形内部空格，全部块类型、顺序、边界和其他内容保持一致。",
+      "visual_review": "build/ci-repair-20261018/mixed-review-page-5.png",
+      "visual_sha256": "e152a8849a5ea813f6de21f7d01d8c345c87161d4d6f883a101297db1a9ac7a1"
+    }
+  ],
+  "source_fact_regression": "tests/unittest/test_flash_pdf_reviewed_history.py::test_mixed_elements_ligature_words_match_visible_source",
+  "public_html": "build/ci-repair-20261018/history-after-complete/document.html",
+  "public_bundle": "build/ci-repair-20261018/history-after-complete/bundle",
+  "public_html_review": "已在浏览器查看公共 HTML；正文标题正确显示 reflux，素材路径已逐项校验。"
+}

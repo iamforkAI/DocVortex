@@ -19,6 +19,10 @@ FIXTURE_SHA = "d19024254ca3cf939365ae12cfd0b74ada190e65707288391a81d19143b9f8ba"
 @pytest.mark.parametrize("owned", [False, True])
 def test_actual_full_source_drops_diagonal_rows_and_chars_before_layout(page, owned):
     """运输完整实际行/原字，在采集边界排斜水印；模拟快照只测试边界，不冒称重新解析PDF。"""
+    from docvortex._compute_backend import get_native
+
+    if owned and get_native() is None:
+        pytest.skip("自有快照协议需要原生扩展；纯 Python 路径由 owned=False 覆盖")
     source = actual_direction_case(f"watermark_actual_direction_source_p{page}", FIXTURE, FIXTURE_SHA)
     raw = source.chars
     geometry = PDFPageTextGeometry(
