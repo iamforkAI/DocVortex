@@ -1,0 +1,52 @@
+{
+  "scope": "complete actual before-producer Source p2/p21; no PDF parse during fixture creation",
+  "original_sha256": "87d98f6f4e42152c38b0a1f8dcfefa3e5ac163cc086a6f37169cabadf77bd107",
+  "page_count": 24,
+  "pages": [
+    2,
+    21
+  ],
+  "before_source_sha256": "a61bd46974bf8f7ade5693f813374ba1d6f754e12c5ee7d3bc1d78cae4576eee",
+  "after_capture_source_sha256": "7af7326df7ac5caba81398732e20ae4d22b3826459fdc12a1d30b98a5d1487d1",
+  "native_protocol": 34,
+  "native_sha256": "18794912d932bb33218d063b4fd1855c7a3392342ba67f8efee68feafee81b24",
+  "fixture_sha256": "0784cc44d35300ede304a0fc2478e6bfea3222fb6b6ea560ffcd7d1a43eadafa",
+  "capture_inputs": [
+    {
+      "path": "/Volumes/2TB/projects/20240809magic_pdf/docvortex/output/pdf/flash-layout-integration-20261014/raw-historyv16/sources.pickle.gz",
+      "sha256": "267d11d9baa0a53cc3bb8f058bb728dabddc411d3e764d8112ef0ad1ff8543ad"
+    },
+    {
+      "path": "/Volumes/2TB/projects/20240809magic_pdf/docvortex/output/pdf/flash-layout-integration-20261014/raw-history100v2/sources.pickle.gz",
+      "sha256": "fb6157feb5344a50d4e00829f8dccbfd7a9cc15b8a6747b5e7b6b70e6ab7228c"
+    }
+  ],
+  "transport": "full Source/char/line/style/spacing/link objects, untouched coordinates/indices/fonts/roles; no glyph rewriting or cached geometry edits",
+  "rotation_metadata": {
+    "path": "/Volumes/2TB/projects/20240809magic_pdf/docvortex/output/pdf/flash-layout-integration-20261014/mixed-page-rotations114.json",
+    "sha256": "51e6d3672617183f9df698f0bb918d464cc4409bcacc7ad87493459ec70e4333",
+    "record": {
+      "source_code_sha256": "f661c9ce863505a5cae998eeba3f38545d7b70661e579e041174b0916ee70459",
+      "pdf_sha256": "87d98f6f4e42152c38b0a1f8dcfefa3e5ac163cc086a6f37169cabadf77bd107",
+      "pages": [
+        {
+          "physical_page": 2,
+          "rotation": 0,
+          "page_size": [
+            595.280029296875,
+            841.8900146484375
+          ]
+        },
+        {
+          "physical_page": 21,
+          "rotation": 0,
+          "page_size": [
+            595.280029296875,
+            841.8900146484375
+          ]
+        }
+      ],
+      "scope": "metadata only, no text extraction/render/replay"
+    }
+  }
+}

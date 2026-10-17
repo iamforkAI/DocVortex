@@ -65,6 +65,173 @@ class _NativeVisualResplit:
     members: tuple[_LineItem, ...]
 
 
+def _native_diagonal_glyph(char: dict[str, Any], page_rotation: int, *, _allow_space: bool = False) -> tuple | None:
+    """只取可见原字的有限原点、墨迹和非标准方向，字面及字体名称不参与空间判定。"""
+    text = str(char.get("char") or "")
+    if (
+        not text
+        or (not _allow_space and not text.strip())
+        or char.get("is_generated")
+        or char.get("text_render_mode") in (3, 7)
+    ):
+        return None
+    rotation = char.get("rotation")
+    if type(rotation) not in (int, float) or not math.isfinite(rotation):
+        return None
+    angle = (_pdftext_angle_degrees(rotation) + page_rotation) % 180.0
+    if min(angle, abs(angle - 90.0), 180.0 - angle) <= _PDFTEXT_HORIZONTAL_BASELINE_MAX_ANGLE_DEGREES:
+        return None
+    origin = char.get("origin")
+    box = _coerce_bbox(char.get("tight_bbox"))
+    if (
+        not isinstance(origin, (tuple, list))
+        or len(origin) != 2
+        or not all(type(value) in (int, float) and math.isfinite(value) for value in origin)
+        or box is None
+        or not all(math.isfinite(value) for value in box)
+        or box[2] <= box[0]
+        or box[3] <= box[1]
+    ):
+        return None
+    return char, origin, box, angle, min(box[2] - box[0], box[3] - box[1])
+
+
+def _native_diagonal_line_is_proven(glyphs: list[tuple]) -> bool:
+    """用整行原点的主轴、跨度、残差及墨迹包络确认真实斜排，不把局部字形倾斜当行方向。"""
+    if len(glyphs) < 4 or len({tuple(item[1]) for item in glyphs}) < 4:
+        return False
+    scale = statistics.median(item[4] for item in glyphs)
+    cx = math.fsum(item[1][0] for item in glyphs) / len(glyphs)
+    cy = math.fsum(item[1][1] for item in glyphs) / len(glyphs)
+    points = [(item[1][0] - cx, item[1][1] - cy) for item in glyphs]
+    xx = math.fsum(x * x for x, _y in points)
+    yy = math.fsum(y * y for _x, y in points)
+    xy = math.fsum(x * y for x, y in points)
+    if not all(math.isfinite(value) for value in (xx, yy, xy)):
+        return False
+    theta = 0.5 * math.atan2(2 * xy, xx - yy)
+    axis = math.degrees(theta) % 180.0
+    if min(axis, abs(axis - 90.0), 180.0 - axis) <= _PDFTEXT_HORIZONTAL_BASELINE_MAX_ANGLE_DEGREES:
+        return False
+    if any(min(abs(item[3] - axis), 180.0 - abs(item[3] - axis)) > 2.0 for item in glyphs):
+        return False
+    cosine, sine = math.cos(theta), math.sin(theta)
+    along = [x * cosine + y * sine for x, y in points]
+    across = [-x * sine + y * cosine for x, y in points]
+    span = max(along) - min(along)
+    if span < 3.0 * scale or max(abs(value) for value in across) > 0.25 * scale:
+        return False
+    box = _bbox_union_many([item[2] for item in glyphs])
+    # 整行外框应随斜向主轴同时向两轴展开；异常巨框或错位墨迹不能只凭原点直线被删除。
+    if box[2] - box[0] < span * abs(cosine) - 0.5 * scale or box[3] - box[1] < span * abs(sine) - 0.5 * scale:
+        return False
+    ink_across = [
+        -(x - cx) * sine + (y - cy) * cosine
+        for item in glyphs
+        for x in (item[2][0], item[2][2])
+        for y in (item[2][1], item[2][3])
+    ]
+    typical_band = statistics.median(
+        abs(sine) * (item[2][2] - item[2][0]) + abs(cosine) * (item[2][3] - item[2][1]) for item in glyphs
+    )
+    return max(ink_across) - min(ink_across) <= typical_band + 0.5 * scale
+
+
+def _native_diagonal_space_is_owned(space: tuple, glyphs: list[tuple]) -> bool:
+    """空格不提供斜行证明；只有原方向、原点和行内位置吻合时才随已证物理行移除。"""
+    angle = glyphs[0][3]
+    difference = abs(space[3] - angle)
+    if min(difference, 180.0 - difference) > 2.0:
+        return False
+    cosine, sine = math.cos(math.radians(angle)), math.sin(math.radians(angle))
+    cx, cy = glyphs[0][1]
+    scale = statistics.median(item[4] for item in glyphs)
+    along = [(item[1][0] - cx) * cosine + (item[1][1] - cy) * sine for item in glyphs]
+    dx, dy = space[1][0] - cx, space[1][1] - cy
+    return (
+        min(along) - 6.0 * scale <= dx * cosine + dy * sine <= max(along) + 6.0 * scale
+        and abs(-dx * sine + dy * cosine) <= 0.25 * scale
+    )
+
+
+def _filter_native_direction_chars(chars: list[Char], *, page_rotation: int = 0) -> list[Char]:
+    """在视觉分段前按空间连续性恢复候选物理行，只移除完整斜行证据认领的原字。"""
+    rejected: set[int] = set()
+    group: list[tuple] = []
+    spaces: list[tuple] = []
+    cardinal_page = page_rotation % 90 == 0
+
+    def finish() -> None:
+        """局部行完整通过几何门后才登记成员，短片段和证据不足的输入原样保留。"""
+        if _native_diagonal_line_is_proven(group):
+            rejected.update(id(item[0]) for item in group)
+            rejected.update(id(item[0]) for item in spaces if _native_diagonal_space_is_owned(item, group))
+        group.clear()
+        spaces.clear()
+
+    for char in chars:
+        # 最常见的标准原字且没有待判斜行时直接通过，避免常规页逐字重复角度和墨迹检查。
+        if cardinal_page and not group and not spaces and char.get("rotation") == 0.0:
+            continue
+        text = str(char.get("char") or "")
+        if text in {"\n", "\r", "\x02"}:
+            finish()
+            continue
+        if not text.strip():
+            space = _native_diagonal_glyph(char, page_rotation, _allow_space=True)
+            if space is not None:
+                spaces.append(space)
+            continue
+        if char.get("is_generated"):
+            continue
+        item = _native_diagonal_glyph(char, page_rotation)
+        if item is None:
+            finish()
+            continue
+        if group:
+            previous = group[-1]
+            difference = abs(item[3] - group[0][3])
+            angle = math.radians(group[0][3])
+            dx, dy = item[1][0] - previous[1][0], item[1][1] - previous[1][1]
+            along = dx * math.cos(angle) + dy * math.sin(angle)
+            across = -dx * math.sin(angle) + dy * math.cos(angle)
+            scale = max(item[4], previous[4])
+            if min(difference, 180.0 - difference) > 2.0 or abs(along) > 6.0 * scale or abs(across) > 0.5 * scale:
+                finish()
+        group.append(item)
+    finish()
+    return [char for char in chars if id(char) not in rejected] if rejected else chars
+
+
+def _filter_native_direction_pdf_lines(pdf_lines: Sequence[dict[str, Any]], page_rotation: int) -> list[dict[str, Any]]:
+    """粗行中正文与斜水印分别按实际字形分布裁决，重建受影响片段的内容与包络。"""
+    output = []
+    for line in pdf_lines:
+        original = [char for span in line.get("spans") or [] for char in span.get("chars") or []]
+        retained = _filter_native_direction_chars(original, page_rotation=page_rotation)
+        if retained is original:
+            output.append(line)
+            continue
+        identities = {id(char) for char in retained}
+        spans = []
+        for span in line.get("spans") or []:
+            chars = [char for char in span.get("chars") or [] if id(char) in identities]
+            if not chars:
+                continue
+            boxes = [box for char in chars if (box := _coerce_bbox(char.get("bbox"))) is not None]
+            spans.append(
+                {
+                    **span,
+                    "chars": chars,
+                    "text": "".join(str(char.get("char") or "") for char in chars),
+                    "bbox": _bbox_union_many(boxes) if boxes else span["bbox"],
+                }
+            )
+        if spans:
+            output.append(_build_pdftext_child_line(line, spans, _pdftext_angle_degrees(spans[0].get("rotation"))))
+    return output
+
+
 def _build_native_line_items_from_chars(
     chars: list[Char],
     page_size: tuple[float, float],
@@ -76,6 +243,7 @@ def _build_native_line_items_from_chars(
     from ...._compute_backend import get_native
     from ....document.pdf.text import _get_lines_from_chars_python
 
+    chars = _filter_native_direction_chars(chars, page_rotation=page_rotation)
     native = get_native()
     ordinary = (
         type(chars) is list
@@ -156,7 +324,7 @@ def _build_native_line_items(
     normal_items: list[_LineItem] = []
     formula_items: list[_LineItem] = []
     supported_lines: list[tuple[dict[str, Any], int, bool]] = []
-    for pdf_line in pdf_lines:
+    for pdf_line in _filter_native_direction_pdf_lines(pdf_lines, page_rotation):
         for child_line in _split_pdftext_line_by_rotation(pdf_line):
             visual_angle = _resolve_pdftext_line_angle(
                 child_line,

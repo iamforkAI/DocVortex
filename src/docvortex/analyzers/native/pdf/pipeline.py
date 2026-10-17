@@ -352,6 +352,7 @@ def _collect_document_sources(pdf_doc: NativePdfSource) -> _DocumentSources:
     """逐页收集原生证据，局部快照与字符引用在收集阶段退出时释放。"""
 
     from .inline.spacing import prepare_spacing_lines
+    from .native_text import _filter_native_direction_chars
 
     page_sizes: list[tuple[float, float]] = []
     page_image_infos: list[list[PDFImageInfo]] = []
@@ -370,11 +371,17 @@ def _collect_document_sources(pdf_doc: NativePdfSource) -> _DocumentSources:
         native_text = getattr(snapshot, "native_text", None)
         if native_text is not None:
             text_geometry, records = native_text.prepare_visual_evidence(page_size, snapshot.rotation, (0.0, 90.0, 270.0))
-            lines = _build_native_line_items_from_records(records, page_size)
         else:
             text_geometry = snapshot.text_geometry
+        raw_chars = text_geometry.chars
+        chars = _filter_native_direction_chars(raw_chars, page_rotation=snapshot.rotation)
+        if native_text is not None and chars is raw_chars:
+            # 已分段记录只负责物化；方向判定始终使用上方保留的完整原字符流。
+            lines = _build_native_line_items_from_records(records, page_size)
+        else:
+            # 命中斜行时才重建视觉记录，确保文字、框及行内样式不再包含已删除的成员。
             lines = _build_native_line_items_from_chars(
-                text_geometry.chars,
+                chars,
                 page_size,
                 page_rotation=snapshot.rotation,
             )
@@ -384,10 +391,12 @@ def _collect_document_sources(pdf_doc: NativePdfSource) -> _DocumentSources:
         group_hanging_letter_paragraphs(lines)
         space_before = set(native_text.tight_space_indices()) if native_text is not None else None
         page_spacing_lines.append(prepare_spacing_lines(lines, space_before))
-        chars = text_geometry.chars
         # 只保留纯 Rust 脚本/几何记录与本页身份映射，不延长 PDFium 页面或文档句柄生命周期。
-        page_owned_scripts.append(_prepare_owned_script_evidence(native_text, chars) if native_text is not None else None)
-        page_geometry_evidence.append(_prepare_owned_geometry_evidence(native_text, chars) if native_text is not None else None)
+        # 过滤视图不压缩 owner 的原始下标；脚本及几何证据仍连接完整原字符序列。
+        page_owned_scripts.append(_prepare_owned_script_evidence(native_text, raw_chars) if native_text is not None else None)
+        page_geometry_evidence.append(
+            _prepare_owned_geometry_evidence(native_text, raw_chars) if native_text is not None else None
+        )
         drawing_lines = _coerce_pdf_drawing_lines(snapshot.drawing_lines)
         raster_em = sorted(line.em_height for line in lines if line.em_height > 0)
         if raster_em:

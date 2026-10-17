@@ -1,0 +1,35 @@
+{
+  "source_code_sha256": "8fe7089f4c2196a4647a2853506916cdd792b966a850ca18f43806957ccb9e6d",
+  "native_sha256": "18794912d932bb33218d063b4fd1855c7a3392342ba67f8efee68feafee81b24",
+  "fixture_sha256": "bb23fcbed1160d7b69650340683c8baf067deb79b84a3e3b0b7c5707fa8f84aa",
+  "scope": "Actual complete raw chars and native visual records before the Python direction admission/filter; no synthetic roles or candidate expectations.",
+  "pages": [
+    {
+      "key": "d-a48ceec828ddab68:19",
+      "source_sha256": "a48ceec828ddab683ab529b89ab5e73a432d901cfd0c73c037cb6277a89a90b6",
+      "physical_page": 19,
+      "actual_stage_pickle_sha256": "425a2a9393b303ca1ee1ce6120b935fdb9cf6033827cf324bb06b9e1f5ff3124",
+      "status_sha256": "d283d3a77fa771f7fd7cc37daea0ba9c63dd1c83ad6e2d91dbbecf54a9f1e87d",
+      "raw_chars": 1105,
+      "records": 110
+    },
+    {
+      "key": "d-a48ceec828ddab68:20",
+      "source_sha256": "a48ceec828ddab683ab529b89ab5e73a432d901cfd0c73c037cb6277a89a90b6",
+      "physical_page": 20,
+      "actual_stage_pickle_sha256": "425a2a9393b303ca1ee1ce6120b935fdb9cf6033827cf324bb06b9e1f5ff3124",
+      "status_sha256": "d283d3a77fa771f7fd7cc37daea0ba9c63dd1c83ad6e2d91dbbecf54a9f1e87d",
+      "raw_chars": 978,
+      "records": 104
+    },
+    {
+      "key": "d-ed2e1025e10cf2e6:20",
+      "source_sha256": "ed2e1025e10cf2e693eba91bfd1427bab655e624d631e7e40fd935aefc9f1c3a",
+      "physical_page": 20,
+      "actual_stage_pickle_sha256": "313e4910971e56cc1977c3e536fbec7d6c11f0629ffa36fb1860fe1ed56f5aea",
+      "status_sha256": "465ea08ea5251ad6a1de31693451d5fe1d1262f771e96ad62cb3d5717d5d1df6",
+      "raw_chars": 925,
+      "records": 101
+    }
+  ]
+}

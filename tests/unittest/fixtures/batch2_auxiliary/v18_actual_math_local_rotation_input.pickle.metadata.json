@@ -1,0 +1,13 @@
+{
+  "scope": "完整中文论文2原件p12的实际pre-filter snapshot+prepare记录，不是新PDF重放",
+  "source_path": "/Volumes/2TB/projects/20240809magic_pdf/docvortex/output/pdf/flash-layout-fallback-20261014/math-direction-trace/actual-input.pickle.gz",
+  "input_sha256": "7e3a30a6f7f1f5de2410d09b25c68f68374f12efb4a27a533321f128292da5a7",
+  "source_sha256": "937cfb51e9e8abc6b3a2d8c46d38003cd2ad795a0692eab3f9e92ac604fcc9ad",
+  "source_code_sha256": "a61bd46974bf8f7ade5693f813374ba1d6f754e12c5ee7d3bc1d78cae4576eee",
+  "raw_chars": 2186,
+  "records": 120,
+  "original_lines": 119,
+  "page": 12,
+  "rotation_units": "raw rotation/writing_angle为RAD，标准Source行angle为DEG",
+  "fixture": "完整raw_chars/records/lines/page_size/rotation，pickle保持共享字典与原索引；不得精简原字或重编号"
+}
