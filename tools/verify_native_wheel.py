@@ -59,6 +59,9 @@ def main() -> None:
     selected = sys.argv[2] if len(sys.argv) == 3 else "rust"
     if selected not in {"python", "rust"}:
         raise SystemExit("Expected python or rust")
+    from verify_runtime_dependencies import verify_runtime_dependencies
+
+    verify_runtime_dependencies()
     pdf = Path(sys.argv[1]).resolve()
     with tempfile.TemporaryDirectory(prefix="docvortex-wheel-") as directory:
         root = Path(directory)
