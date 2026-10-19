@@ -12,6 +12,7 @@ from openpyxl import load_workbook
 from openpyxl.drawing.image import Image as XlsImage
 from openpyxl.utils.cell import range_to_tuple
 from openpyxl.worksheet.worksheet import Worksheet
+from PIL import Image
 from ..image import serialize_office_image
 from ..equation.image import OfficeImageEquationDecoder
 from ..equation.ooxml import OoxmlEquationDecoder
@@ -306,20 +307,38 @@ class XlsxConverter(SpreadsheetProjector):
         self,
         image: XlsImage,
     ) -> tuple[bytes, str | None, str | None] | None:
-        """优先从原 ZIP 读取 openpyxl 图片的未转码原始字节。"""
+        """有界读取 openpyxl 保留的原始流，避免把写出路径误当源 part。"""
 
-        part_name = str(getattr(image, "path", "") or "") or None
-        payload = self._read_xlsx_image_member(part_name) if part_name is not None else None
+        payload = None
+        source = getattr(image, "ref", None)
+        if all(callable(getattr(source, method, None)) for method in ("read", "tell", "seek")):
+            try:
+                position = source.tell()
+                try:
+                    source.seek(0)
+                    payload = source.read(MAX_ENTRY_BYTES + 1)
+                finally:
+                    source.seek(position)
+            except (LegacyOfficeResourceLimitError, MemoryError):
+                raise
+            except (AttributeError, OSError, TypeError, ValueError):
+                payload = None
         if payload is None:
             try:
                 payload = image._data()  # type: ignore[attr-defined]
+            except (LegacyOfficeResourceLimitError, MemoryError):
+                raise
             except Exception:
                 return None
-            if len(payload) > MAX_ENTRY_BYTES:
-                raise LegacyOfficeResourceLimitError(f"XLSX image exceeds max_entry_bytes={MAX_ENTRY_BYTES}")
-        image_format = str(getattr(image, "format", "") or "").casefold()
-        content_type = f"image/{image_format}" if image_format else None
-        return payload, part_name, content_type
+        if len(payload) > MAX_ENTRY_BYTES:
+            raise LegacyOfficeResourceLimitError(f"XLSX image exceeds max_entry_bytes={MAX_ENTRY_BYTES}")
+        # _data() 可能把 BMP/TIFF 转成 PNG，媒体类型必须来自返回的字节。
+        try:
+            with Image.open(BytesIO(payload)) as decoded:
+                content_type = Image.MIME.get(decoded.format)
+        except (OSError, ValueError):
+            content_type = None
+        return payload, None, content_type
 
     def _collect_sheet_images(self, sheet: Worksheet) -> list[SheetImage]:
         """读取当前工作表的原始图片并识别图片公式。"""
@@ -395,6 +414,8 @@ class XlsxConverter(SpreadsheetProjector):
                         order=image_order,
                     )
                 )
+            except (LegacyOfficeResourceLimitError, MemoryError):
+                raise
             except Exception as e:
                 logger.error(f"无法从 Excel 工作表中提取图片，错误信息：{e}")
 
