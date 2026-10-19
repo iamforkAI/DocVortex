@@ -10,7 +10,7 @@ import zlib
 from loguru import logger
 
 from ..image import ensure_bmp_header
-from ..errors import LegacyOfficeResourceLimitError
+from ..errors import LegacyOfficeImageLimitError, LegacyOfficeResourceLimitError
 from ..limits import MAX_ASSET_TOTAL_BYTES, MAX_ENTRY_BYTES, MAX_PICTURE_RECORDS, MAX_RECORD_DEPTH
 
 OFFICEART_CONTAINER_VERSION = 0xF
@@ -213,14 +213,17 @@ def decode_blip(record: OfficeArtRecord) -> OfficeImagePayload | None:
         if data is None:
             return None
         if len(data) > MAX_ENTRY_BYTES:
-            raise LegacyOfficeResourceLimitError("bitmap BLIP exceeds max_entry_bytes")
+            raise LegacyOfficeImageLimitError("bitmap BLIP exceeds max_entry_bytes")
         if record.record_type == 0xF01D:
             return OfficeImagePayload(data=data, extension="jpg", content_type="image/jpeg")
         if record.record_type == 0xF01E:
             return OfficeImagePayload(data=data, extension="png", content_type="image/png")
         if record.record_type == 0xF029:
             return OfficeImagePayload(data=data, extension="tiff", content_type="image/tiff")
-        return OfficeImagePayload(data=ensure_bmp_header(data), extension="bmp", content_type="image/bmp")
+        data = ensure_bmp_header(data)
+        if len(data) > MAX_ENTRY_BYTES:
+            raise LegacyOfficeImageLimitError("bitmap BLIP exceeds max_entry_bytes")
+        return OfficeImagePayload(data=data, extension="bmp", content_type="image/bmp")
 
     if record.record_type not in {0xF01A, 0xF01B}:
         return None
@@ -236,7 +239,7 @@ def decode_blip(record: OfficeArtRecord) -> OfficeImagePayload | None:
     payload_start = header_offset + 34
     payload = body[payload_start : payload_start + compressed_size]
     if declared_size > MAX_ENTRY_BYTES:
-        raise LegacyOfficeResourceLimitError("metafile BLIP exceeds max_entry_bytes")
+        raise LegacyOfficeImageLimitError("metafile BLIP exceeds max_entry_bytes")
     if compression == 0:
         data = b""
         reached_eof = False
@@ -244,19 +247,21 @@ def decode_blip(record: OfficeArtRecord) -> OfficeImagePayload | None:
             try:
                 inflater = zlib.decompressobj(window_bits)
                 candidate = inflater.decompress(payload, MAX_ENTRY_BYTES + 1)
-                candidate += inflater.flush(MAX_ENTRY_BYTES + 1 - len(candidate))
             except zlib.error:
                 continue
+            # 先检查有界输出，避免 flush(0) 或 flush 继续分配超限数据。
+            if len(candidate) > MAX_ENTRY_BYTES:
+                raise LegacyOfficeImageLimitError("metafile BLIP decompression exceeded its limit")
             if inflater.eof:
                 data = candidate
                 reached_eof = True
                 break
         if not reached_eof:
             return None
-        if len(data) > MAX_ENTRY_BYTES:
-            raise LegacyOfficeResourceLimitError("metafile BLIP decompression exceeded its limit")
     else:
         data = payload
+        if len(data) > MAX_ENTRY_BYTES:
+            raise LegacyOfficeImageLimitError("metafile BLIP exceeds max_entry_bytes")
     if record.record_type == 0xF01A:
         return OfficeImagePayload(
             data=data,
@@ -343,11 +348,15 @@ def decode_bstore(
     result: dict[int, OfficeImagePayload] = {}
     asset_total = 0
     for index, bse in enumerate(bse_records[:MAX_PICTURE_RECORDS], start=1):
-        decoded = _decode_bse_body(
-            bse.payload,
-            charge=charge,
-            delay_stream=delay_stream,
-        )
+        try:
+            decoded = _decode_bse_body(
+                bse.payload,
+                charge=charge,
+                delay_stream=delay_stream,
+            )
+        except LegacyOfficeImageLimitError as exc:
+            logger.warning("LEGACY_OFFICE_IMAGE_LIMIT: skipped BSE {} at offset {}: {}", index, bse.offset, exc)
+            continue
         if decoded is None:
             continue
         asset_total += len(decoded.data)

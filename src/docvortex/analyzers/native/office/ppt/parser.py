@@ -11,7 +11,12 @@ import zlib
 from loguru import logger
 
 from ..._shared.hyperlink import sanitize_hyperlink_target
-from ..errors import LegacyOfficeEncryptedError, LegacyOfficeMalformedError, LegacyOfficeResourceLimitError
+from ..errors import (
+    LegacyOfficeEncryptedError,
+    LegacyOfficeImageLimitError,
+    LegacyOfficeMalformedError,
+    LegacyOfficeResourceLimitError,
+)
 from ..legacy.binary import get_i16, get_u16, get_u32
 from ..limits import MAX_ASSET_TOTAL_BYTES, MAX_ENTRY_BYTES, MAX_GRID_SLOTS, MAX_PICTURE_RECORDS, MAX_USER_EDIT_CHAIN
 from ..equation.mtef import decode_equation_object
@@ -1415,16 +1420,20 @@ def _picture_map(
     bse_records = [record for record in iter_descendants(document, budget=budget) if record.record_type == RT_OFFICEART_BSE]
     for index, bse in enumerate(bse_records[:MAX_PICTURE_RECORDS], start=1):
         decoded = None
-        picture_offset = get_u32(bse.payload, 28)
-        if picture_offset is not None and picture_offset < len(pictures):
-            picture_record = record_at(pictures, int(picture_offset), budget=budget)
-            if picture_record is not None:
-                if picture_record.record_type == RT_OFFICEART_BSE:
-                    decoded = _decode_bse_body(picture_record.payload, budget)
-                else:
-                    decoded = _decode_blip(picture_record)
-        if decoded is None:
-            decoded = _decode_bse_body(bse.payload, budget)
+        try:
+            picture_offset = get_u32(bse.payload, 28)
+            if picture_offset is not None and picture_offset < len(pictures):
+                picture_record = record_at(pictures, int(picture_offset), budget=budget)
+                if picture_record is not None:
+                    if picture_record.record_type == RT_OFFICEART_BSE:
+                        decoded = _decode_bse_body(picture_record.payload, budget)
+                    else:
+                        decoded = _decode_blip(picture_record)
+            if decoded is None:
+                decoded = _decode_bse_body(bse.payload, budget)
+        except LegacyOfficeImageLimitError as exc:
+            logger.warning("PPT_IMAGE_LIMIT: skipped BSE {} at offset {}: {}", index, bse.offset, exc)
+            continue
         if decoded is None:
             continue
         asset_total += len(decoded.data)

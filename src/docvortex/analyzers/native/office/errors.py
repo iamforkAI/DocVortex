@@ -31,3 +31,7 @@ class LegacyOfficeResourceLimitError(LegacyOfficeError):
     """输入超过固定安全限制。"""
 
     code = "resource_limit"
+
+
+class LegacyOfficeImageLimitError(LegacyOfficeResourceLimitError):
+    """单张 BLIP 图片超过大小限制，可在图片收集边界跳过。"""

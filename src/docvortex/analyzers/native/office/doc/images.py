@@ -7,7 +7,7 @@ import hashlib
 
 from loguru import logger
 
-from ..errors import LegacyOfficeResourceLimitError
+from ..errors import LegacyOfficeImageLimitError, LegacyOfficeResourceLimitError
 from ..legacy.binary import bounded_slice, get_u16, get_u32
 from ..limits import MAX_ASSET_TOTAL_BYTES
 from ..legacy.officeart import OfficeImagePayload, decode_bstore, extract_word_shapes, first_blip, record_at
@@ -81,7 +81,12 @@ def inline_picture(
         logger.warning(f"DOC picture at Data offset {offset} is out of bounds")
         return None
     art = picf[min(header_length, len(picf)) :]
-    decoded = first_blip(art, charge=budget.charge)
+    try:
+        decoded = first_blip(art, charge=budget.charge)
+    except LegacyOfficeImageLimitError as exc:
+        logger.warning("DOC_IMAGE_LIMIT: skipped picture at Data offset {}: {}", offset, exc)
+        # 超限图片不能再次通过下面的原始签名扫描恢复。
+        return None
     if decoded is None:
         # 少量旧文件把原始位图直接放在 PICF 尾部，按 magic 尽力保留。
         signatures = (
