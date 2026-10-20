@@ -41,9 +41,9 @@ def analyze(
     source_context: HtmlSourceContext | None = None,
     parse_mode: Literal["auto", "txt", "ocr"] = "auto",
 ) -> AnalysisResult:
-    """分析文档，PDF 默认按分类选择原生文字或基础 OCR，显式模式优先。"""
+    """分析原生文档；PDF 自动分类或显式模式需要 OCR 时提示改用 MinerU。"""
     from .analyzers.native import models
-    from .errors import InvalidRequestError
+    from .errors import DocumentError, InvalidRequestError
 
     if parse_mode not in {"auto", "txt", "ocr"}:
         raise InvalidRequestError("parse_mode_invalid", "parse_mode must be auto, txt, or ocr", "parse_mode")
@@ -58,8 +58,6 @@ def analyze(
         properties = prepared.source_properties
         metadata_diagnostics = tuple(Diagnostic("read_metadata_failed", message) for message in prepared.metadata_warnings)
         if prepared.file_suffix not in {"pdf", "mhtml"}:
-            from .errors import DocumentError
-
             try:
                 extracted = extract_metadata(
                     prepared.data, file_suffix=prepared.file_suffix, source_context=prepared.source_context
@@ -74,18 +72,18 @@ def analyze(
             from .document.pdf.visuals import attach_visual_block_images_from_pdf
 
             assert prepared.document is not None
+            resolved_mode = prepared.document.classify() if parse_mode == "auto" else parse_mode
+            if resolved_mode == "ocr":
+                raise DocumentError(
+                    "pdf_ocr_unsupported",
+                    "PDF OCR is not supported by DocVortex. Please download and install MinerU to process this document: "
+                    "https://github.com/opendatalab/MinerU",
+                )
             geometry, geometry_diagnostics = extract_layout_geometry(prepared.document, prepared.page_index_map)
             extensions[LAYOUT_EXTENSION] = geometry
             native_diagnostics += geometry_diagnostics
-            resolved_mode = prepared.document.classify() if parse_mode == "auto" else parse_mode
-            if resolved_mode == "ocr":
-                from .analyzers.ocr.pdf import analyze_pdf_ocr
-
-                pages, ocr_diagnostics = analyze_pdf_ocr(prepared.document, prepared.page_index_map)
-                native_diagnostics += ocr_diagnostics
-            else:
-                pages = models.PdfModel().predict(prepared.document)
-                attach_visual_block_images_from_pdf(prepared.document, pages)
+            pages = models.PdfModel().predict(prepared.document)
+            attach_visual_block_images_from_pdf(prepared.document, pages)
             attach_layout_image_rotations(geometry, pages, prepared.page_index_map)
         elif prepared.file_suffix == "ofd":
             ofd_model = models.OfdModel()

@@ -118,7 +118,7 @@ def test_sparse_visual_pages_keep_physical_identity(
 
 
 def test_text_only_pdf_does_not_start_raster_pool(monkeypatch: pytest.MonkeyPatch) -> None:
-    """无视觉块的真实文本 PDF 不应启动进程池。"""
+    """强制原生解析无视觉块的稀疏文本 PDF，不应启动进程池。"""
     from docvortex.document.pdf import images
 
     def forbidden(*args: object, **kwargs: object) -> object:
@@ -127,7 +127,7 @@ def test_text_only_pdf_does_not_start_raster_pool(monkeypatch: pytest.MonkeyPatc
 
     monkeypatch.setattr(images, "load_images_from_pdf_bytes_range", forbidden)
     monkeypatch.setattr(images, "_load_visual_crops_from_pdf_bytes_range", forbidden)
-    assert api.parse(make_pdf(1)).middle_json.pages
+    assert api.parse(make_pdf(1), parse_mode="txt").middle_json.pages
 
 
 def test_visual_windows_and_container_preparation() -> None:

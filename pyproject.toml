@@ -33,7 +33,6 @@ dependencies = [
     "mineru-magika>=1.0.3,<1.1.0",
     "onnxruntime-directml>=1.23,<2; sys_platform == 'win32' and (platform_machine == 'AMD64' or platform_machine == 'amd64' or platform_machine == 'x86_64')",
     "onnxruntime>=1.20.1,<2; sys_platform != 'win32' or (platform_machine != 'AMD64' and platform_machine != 'amd64' and platform_machine != 'x86_64')",
-    "PyYAML>=6,<7", "pyclipper>=1.3,<2", "filelock>=3.12,<4",
 ]
 
 [project.optional-dependencies]

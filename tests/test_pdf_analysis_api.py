@@ -82,6 +82,7 @@ def test_new_api_annotations_resolve() -> None:
 @pytest.mark.parametrize(
     "module",
     [
+        "docvortex.analyzers.ocr",
         "docvortex.document.pdf.geometry",
         "docvortex.document.pdf.visual_geometry",
         "docvortex.document.pdf.document",

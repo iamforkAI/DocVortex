@@ -150,10 +150,10 @@ def test_bad_optional_xml_preserves_count_and_application() -> None:
 
 
 def test_pdf_selection_ownership_and_bundle(tmp_path: Path) -> None:
-    """选页保留整本属性，调用方句柄保持可用，结果包脱离源文件往返。"""
+    """原生解析空白样本时选页保留整本属性，调用方句柄和结果包往返均保持有效。"""
     with PDFDocument(pdf_payload()) as document:
         original = docvortex.extract_metadata(document).metadata.document
-        result = docvortex.parse(document, page_range="2", keep_model_json=True)
+        result = docvortex.parse(document, page_range="2", keep_model_json=True, parse_mode="txt")
         assert document.page_count == 2
         assert result.middle_json.metadata.document == original
         assert result.model_json.metadata.document == original

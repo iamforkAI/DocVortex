@@ -65,3 +65,9 @@ def test_installed_metadata_requires_runtime_free_magika_fork() -> None:
     assert "1.1.0" not in forks[0].specifier
     fork_dependencies = [Requirement(value) for value in metadata.requires("mineru-magika") or ()]
     assert all(not canonicalize_name(requirement.name).startswith("onnxruntime") for requirement in fork_dependencies)
+
+
+def test_installed_metadata_does_not_require_pdf_ocr_dependencies() -> None:
+    """发行物不直接依赖已移除的 OCR 库，其他功能的传递依赖不受限制。"""
+    requirements = [Requirement(value) for value in metadata.requires("docvortex") or ()]
+    assert not {canonicalize_name(requirement.name) for requirement in requirements} & {"pyyaml", "filelock", "pyclipper"}

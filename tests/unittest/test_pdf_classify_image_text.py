@@ -124,16 +124,10 @@ def test_classification_preserves_page_render_and_original_text(kind: str) -> No
         assert "".join(char["char"] for char in doc.get_page_chars(0)) == raw
 
 
-def test_public_auto_parse_uses_native_text_for_digital_background(monkeypatch: pytest.MonkeyPatch) -> None:
-    """公共 auto 入口对背景图走真实原生解析，不能初始化 OCR 推理。"""
+def test_public_auto_parse_uses_native_text_for_digital_background() -> None:
+    """公共 auto 入口对背景图走真实原生解析，不能误报需要 OCR。"""
     from docvortex import parse
-    from docvortex.analyzers.ocr import pdf as ocr_pdf
 
-    def forbidden(*args: object, **kwargs: object) -> None:
-        """背景页若误走 OCR，立即暴露真实公共路由错误。"""
-        raise AssertionError("Digital background must stay native")
-
-    monkeypatch.setattr(ocr_pdf, "analyze_pdf_ocr", forbidden)
     result = parse(image_text_pdf("background"), file_suffix="pdf", parse_mode="auto")
     assert "readable document text" in result.middle_json.to_json()
 

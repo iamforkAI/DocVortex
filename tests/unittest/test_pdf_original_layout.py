@@ -340,8 +340,8 @@ def test_index_links_keep_source_page_numbers() -> None:
 
 
 def test_pdf_parse_and_bundle_retain_selected_page_geometry(tmp_path) -> None:
-    """真实解析、后处理和 bundle 往返后仍可脱离源文件导出选中页面。"""
-    result = parse(_source_pdf(), file_suffix="pdf", page_range="1,3", keep_model_json=True)
+    """稀疏样本经原生解析、后处理和 bundle 往返后仍可脱离源文件导出选中页面。"""
+    result = parse(_source_pdf(), file_suffix="pdf", page_range="1,3", keep_model_json=True, parse_mode="txt")
     extension = result.middle_json.extensions["docvortex_layout"]
     assert extension == result.model_json.extensions["docvortex_layout"]
     assert extension["pages"] == [
@@ -357,8 +357,8 @@ def test_pdf_parse_and_bundle_retain_selected_page_geometry(tmp_path) -> None:
 
 
 def test_rotation_and_blank_page_geometry_survive_parsing() -> None:
-    """旋转空白页的可见宽高只交换一次，原始分页保持完整。"""
-    result = parse(_source_pdf(), file_suffix="pdf")
+    """原生解析保留旋转空白页，可见宽高只交换一次，原始分页保持完整。"""
+    result = parse(_source_pdf(), file_suffix="pdf", parse_mode="txt")
     reader = _reader(render_pdf(result.middle_json))
     assert len(reader.pages) == 3
     assert tuple(reader.pages[1].mediabox)[2:] == (480, 320)
@@ -402,12 +402,15 @@ def test_concurrent_diagnostics_do_not_leak() -> None:
 
 
 def test_cli_pdf_layout_reaches_export(tmp_path) -> None:
-    """通过真实 CLI 验证显式布局选项到页面输出的完整链路。"""
+    """通过真实 CLI 原生解析验证显式布局选项到页面输出的完整链路。"""
     source = tmp_path / "source.pdf"
     source.write_bytes(_source_pdf())
     output = tmp_path / "out.pdf"
     runner = CliRunner()
-    result = runner.invoke(main, ["convert", str(source), "-o", str(output), "--format", "pdf", "--pdf-layout", "original"])
+    result = runner.invoke(
+        main,
+        ["convert", str(source), "-o", str(output), "--format", "pdf", "--pdf-layout", "original", "--parse-mode", "txt"],
+    )
     assert result.exit_code == 0, result.output
     assert len(_reader(output.read_bytes()).pages) == 3
     rejected = runner.invoke(main, ["convert", str(source), "-o", str(output), "--format", "html", "--pdf-layout", "original"])

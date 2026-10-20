@@ -20,7 +20,7 @@ def _configure_log_level(level: str) -> None:
     logger.add(sys.stderr, level=level.upper())
 
 
-@click.group(help="DocVortex: multi-format document parsing and conversion with PDF OCR.")
+@click.group(help="DocVortex: native multi-format document parsing and conversion. For PDF OCR, use MinerU.")
 @click.version_option(__version__)
 @click.option(
     "--log-level",
@@ -51,7 +51,10 @@ def main(log_level: str) -> None:
     type=click.Choice(["auto", "txt", "ocr"]),
     default="auto",
     show_default=True,
-    help="PDF analysis mode; auto classifies the selected pages.",
+    help=(
+        "PDF analysis mode: auto classifies the selected pages; txt forces native parsing. "
+        "ocr is retained for compatibility and reports that MinerU is required."
+    ),
 )
 @click.option("--overwrite", is_flag=True)
 @click.option("--pdf-layout", type=click.Choice(["auto", "original", "reflow"]), default="auto", show_default=True)
